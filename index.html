@@ -437,12 +437,12 @@ const STATIONS = STATIONS_RAW.map(s => ({
    STATE
 ══════════════════════════════════════════ */
 const W = 600, H = 540;
-const LAUNCH_H = 290;          // 발사대 영역 높이
-const CANVAS_H = H + LAUNCH_H; // 다트 캔버스 전체 높이 (830)
+const LAUNCH_H = 440;          // 발사대 영역 높이 (넉넉히)
+const CANVAS_H = H + LAUNCH_H; // 다트 캔버스 전체 높이 (980)
 let state = 'idle';
 let mapRot = [0,90,180,270][Math.floor(Math.random()*4)];
 let pulling = false, pxC=0, pyC=0;
-const DART_HOME = {x:300, y:H+100}; // 발사대 중앙 (640)
+const DART_HOME = {x:300, y:H+130}; // 발사대 중앙 (670)
 let hitDist=null, hitStation=null, hitLatLng=null;
 let raf=null, curtainProg=0;
 let kakaoKey = localStorage.getItem('sdt_kakao_key') || 'd34d46334dc32deae1b94065bd2f9a27';
@@ -599,7 +599,7 @@ function drawDart(x,y,angleDeg,stuck) {
     const dist=Math.hypot(fdx,fdy);
     if(dist>5){
       const nx2=fdx/dist, ny2=fdy/dist;
-      const aimD=dist*3.5;
+      const aimD=dist*3.6;
       const aimX=Math.max(20,Math.min(W-20,pxC+nx2*aimD));
       const aimY=Math.max(15,Math.min(H-40,pyC+ny2*aimD));
       // 점선 조준선
@@ -662,7 +662,7 @@ function drawSlingshot(ctx,dx,dy){
 }
 
 /* ── MECHANICS ── */
-const MAX_PULL=175;
+const MAX_PULL=290;
 function getXY(e){
   const r=document.getElementById('dartCvs').getBoundingClientRect();
   return {x:(e.clientX-r.left)*(W/r.width), y:(e.clientY-r.top)*(CANVAS_H/r.height)};
@@ -689,7 +689,7 @@ function onUp(e){
   if(power<25){cancelPull();return;}
   pulling=false; state='fly';
   const nx=fdx/power, ny=fdy/power;
-  const flyD=power*5.2+Math.random()*80-40;
+  const flyD=power*3.6+Math.random()*80-40;
   const tx=Math.max(20,Math.min(W-20,pxC+nx*flyD));
   const ty=Math.max(20,Math.min(H-50,pyC+ny*flyD));
   animFly(pxC,pyC,tx,ty,Math.atan2(-ny,-nx)*180/Math.PI-90);
