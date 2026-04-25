@@ -73,7 +73,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;
   margin-bottom:6px;
 }
-.res-dong{font-size:17px;font-weight:700;color:var(--txt2);letter-spacing:-.3px;margin-bottom:10px;}
+.res-dong{font-size:20px;font-weight:800;color:var(--txt);letter-spacing:-.5px;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:4px;}
 .res-range{
   display:inline-flex;align-items:center;gap:5px;
   background:var(--goldD);border:1px solid rgba(245,166,35,.2);
@@ -210,7 +210,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <div class="res-pin">📍</div>
       <div class="res-gu" id="resGu">—</div>
       <div class="res-dong" id="resDong"></div>
-      <div class="res-range">반경 800m 주변 장소</div>
+      <div class="res-range">역 반경 1.5km 주변 장소</div>
       <div><a class="map-link" id="mapLink" target="_blank" rel="noopener">🗺 카카오맵에서 보기</a></div>
     </div>
 
@@ -286,33 +286,151 @@ const D = [
   {n:'서초구',   c:'#123020', p:'328,374 456,377 460,462 460,525 410,525 336,525 336,492 330,446 334,400',           cx:396,cy:455},
 ];
 
-const DONGS = {
-  '은평구':   [{n:'불광동',x:185,y:88},{n:'역촌동',x:178,y:72},{n:'녹번동',x:205,y:75},{n:'응암동',x:168,y:98},{n:'수색동',x:133,y:102},{n:'구산동',x:155,y:85}],
-  '강북구':   [{n:'수유동',x:335,y:62},{n:'미아동',x:328,y:72},{n:'번동',x:314,y:56},{n:'우이동',x:340,y:42},{n:'인수동',x:348,y:38}],
-  '도봉구':   [{n:'도봉동',x:446,y:56},{n:'창동',x:438,y:66},{n:'방학동',x:434,y:50},{n:'쌍문동',x:428,y:62}],
-  '노원구':   [{n:'상계동',x:555,y:55},{n:'중계동',x:547,y:62},{n:'공릉동',x:545,y:66},{n:'월계동',x:528,y:72},{n:'하계동',x:552,y:70}],
-  '성북구':   [{n:'성신여대 동선동',x:346,y:157},{n:'안암동 고려대',x:365,y:152},{n:'정릉동',x:338,y:128},{n:'길음동',x:358,y:132},{n:'석관동',x:386,y:147},{n:'삼선동',x:342,y:160}],
-  '중랑구':   [{n:'면목동',x:508,y:197},{n:'묵동',x:528,y:177},{n:'상봉동',x:520,y:188},{n:'망우동',x:538,y:172},{n:'신내동',x:545,y:182}],
-  '서대문구': [{n:'신촌동',x:248,y:185},{n:'연희동',x:236,y:172},{n:'홍제동',x:226,y:162},{n:'충정로',x:254,y:192},{n:'북아현동',x:258,y:180}],
-  '마포구':   [{n:'홍대 서교동',x:175,y:257},{n:'합정동',x:158,y:268},{n:'망원동',x:138,y:260},{n:'공덕동',x:198,y:247},{n:'연남동',x:182,y:248},{n:'상수동',x:168,y:264},{n:'성산동',x:155,y:252}],
-  '종로구':   [{n:'경복궁 사직동',x:293,y:217},{n:'인사동',x:318,y:228},{n:'창신동',x:343,y:248},{n:'혜화동 대학로',x:332,y:216},{n:'부암동',x:278,y:206},{n:'통의동 서촌',x:300,y:220}],
-  '동대문구': [{n:'경희대 회기동',x:428,y:196},{n:'청량리',x:423,y:212},{n:'신설동',x:403,y:222},{n:'장안동',x:438,y:216},{n:'이문동',x:432,y:202}],
-  '광진구':   [{n:'건대입구 화양동',x:488,y:282},{n:'구의동',x:518,y:290},{n:'자양동',x:508,y:297},{n:'군자동',x:498,y:266},{n:'중곡동',x:505,y:275}],
-  '중구':     [{n:'명동',x:318,y:295},{n:'을지로',x:323,y:290},{n:'충무로',x:316,y:302},{n:'남대문시장',x:310,y:305},{n:'동대문',x:338,y:298}],
-  '성동구':   [{n:'성수동',x:460,y:296},{n:'왕십리',x:374,y:290},{n:'마장동',x:393,y:282},{n:'금호동',x:400,y:308},{n:'옥수동',x:388,y:315},{n:'행당동',x:405,y:292}],
-  '용산구':   [{n:'이태원동',x:256,y:300},{n:'한남동',x:270,y:307},{n:'이촌동',x:248,y:313},{n:'효창동',x:238,y:296},{n:'청파동',x:246,y:293},{n:'용산역',x:255,y:308}],
-  '강서구':   [{n:'화곡동',x:86,y:392},{n:'마곡동',x:58,y:352},{n:'가양동',x:73,y:367},{n:'염창동',x:128,y:357},{n:'등촌동',x:105,y:372}],
-  '양천구':   [{n:'목동',x:102,y:488},{n:'신정동',x:78,y:502},{n:'신월동',x:53,y:512}],
-  '구로구':   [{n:'구로디지털단지',x:208,y:490},{n:'신도림',x:193,y:478},{n:'고척동',x:176,y:507},{n:'개봉동',x:162,y:498}],
-  '금천구':   [{n:'가산디지털단지',x:214,y:520},{n:'독산동',x:204,y:526},{n:'시흥동',x:198,y:532}],
-  '영등포구': [{n:'여의도',x:166,y:360},{n:'영등포역',x:183,y:382},{n:'당산동',x:173,y:373},{n:'대림동',x:198,y:415},{n:'문래동',x:190,y:395}],
-  '동작구':   [{n:'노량진',x:253,y:397},{n:'흑석동',x:256,y:400},{n:'상도동',x:273,y:422},{n:'사당동',x:293,y:437},{n:'대방동',x:242,y:408}],
-  '관악구':   [{n:'신림동',x:266,y:490},{n:'봉천동',x:278,y:476},{n:'서울대입구',x:288,y:466},{n:'낙성대',x:280,y:470}],
-  '강남구':   [{n:'압구정동',x:393,y:332},{n:'청담동',x:443,y:327},{n:'삼성동 코엑스',x:453,y:347},{n:'역삼동',x:398,y:358},{n:'대치동',x:442,y:366},{n:'개포동',x:462,y:370},{n:'논현동',x:412,y:338}],
-  '강동구':   [{n:'천호동',x:553,y:377},{n:'강동역',x:563,y:387},{n:'길동',x:568,y:397},{n:'암사동',x:578,y:382},{n:'상일동',x:578,y:415},{n:'고덕동',x:570,y:408}],
-  '송파구':   [{n:'잠실동',x:488,y:402},{n:'석촌동',x:473,y:417},{n:'방이동',x:493,y:432},{n:'오금동',x:508,y:442},{n:'가락동',x:498,y:452},{n:'송파동',x:480,y:430}],
-  '서초구':   [{n:'강남역 서초동',x:368,y:417},{n:'방배동',x:356,y:437},{n:'반포동',x:366,y:400},{n:'양재동',x:398,y:472},{n:'잠원동',x:383,y:397},{n:'내곡동',x:412,y:490}],
-};
+/* ══════════════════════════════════════════
+   STATIONS — 서울 주요 지하철역 (lat/lng → SVG 좌표 자동 계산)
+   SVG 공식: x=(lng-126.734)/0.450*600  y=(37.715-lat)/0.302*540
+══════════════════════════════════════════ */
+const STATIONS_RAW = [
+  // 강남·서초
+  {n:'강남',         lat:37.4979, lng:127.0276},
+  {n:'역삼',         lat:37.5006, lng:127.0361},
+  {n:'선릉',         lat:37.5042, lng:127.0493},
+  {n:'삼성',         lat:37.5088, lng:127.0633},
+  {n:'봉은사',       lat:37.5149, lng:127.0592},
+  {n:'교대',         lat:37.4938, lng:127.0137},
+  {n:'방배',         lat:37.4817, lng:126.9977},
+  {n:'사당',         lat:37.4765, lng:126.9815},
+  {n:'이수',         lat:37.4865, lng:126.9812},
+  {n:'내방',         lat:37.4896, lng:126.9959},
+  {n:'고속버스터미널',lat:37.5045, lng:127.0047},
+  {n:'반포',         lat:37.5028, lng:127.0043},
+  {n:'잠원',         lat:37.5065, lng:127.0163},
+  {n:'양재',         lat:37.4841, lng:127.0347},
+  {n:'도곡',         lat:37.4943, lng:127.0431},
+  {n:'대치',         lat:37.4938, lng:127.0632},
+  {n:'개포동',       lat:37.4808, lng:127.0659},
+  {n:'강남구청',     lat:37.5182, lng:127.0447},
+  {n:'압구정로데오',  lat:37.5267, lng:127.0419},
+  // 강동·송파
+  {n:'잠실',         lat:37.5133, lng:127.1000},
+  {n:'석촌',         lat:37.5047, lng:127.1001},
+  {n:'가락시장',     lat:37.4948, lng:127.1156},
+  {n:'올림픽공원',   lat:37.5218, lng:127.1218},
+  {n:'천호',         lat:37.5385, lng:127.1238},
+  {n:'강동',         lat:37.5309, lng:127.1394},
+  {n:'암사',         lat:37.5522, lng:127.1412},
+  {n:'강변',         lat:37.5318, lng:127.0944},
+  {n:'뚝섬유원지',   lat:37.5312, lng:127.0663},
+  // 마포·서대문
+  {n:'홍대입구',     lat:37.5573, lng:126.9252},
+  {n:'합정',         lat:37.5497, lng:126.9140},
+  {n:'망원',         lat:37.5559, lng:126.9102},
+  {n:'상수',         lat:37.5488, lng:126.9225},
+  {n:'공덕',         lat:37.5447, lng:126.9517},
+  {n:'마포',         lat:37.5373, lng:126.9469},
+  {n:'신촌',         lat:37.5551, lng:126.9370},
+  {n:'이대',         lat:37.5556, lng:126.9462},
+  {n:'아현',         lat:37.5568, lng:126.9557},
+  {n:'충정로',       lat:37.5595, lng:126.9659},
+  {n:'서대문',       lat:37.5710, lng:126.9657},
+  {n:'독립문',       lat:37.5876, lng:126.9606},
+  {n:'홍제',         lat:37.5929, lng:126.9537},
+  {n:'디지털미디어시티',lat:37.5764, lng:126.8912},
+  {n:'수색',         lat:37.5946, lng:126.8874},
+  // 은평구
+  {n:'연신내',       lat:37.6103, lng:126.9206},
+  {n:'불광',         lat:37.6104, lng:126.9284},
+  {n:'구산',         lat:37.6056, lng:126.9178},
+  {n:'응암',         lat:37.5997, lng:126.9108},
+  {n:'새절',         lat:37.5977, lng:126.9144},
+  {n:'구파발',       lat:37.6362, lng:126.9194},
+  // 도봉·강북·노원
+  {n:'도봉산',       lat:37.6893, lng:127.0437},
+  {n:'쌍문',         lat:37.6478, lng:127.0451},
+  {n:'창동',         lat:37.6534, lng:127.0471},
+  {n:'노원',         lat:37.6556, lng:127.0563},
+  {n:'중계',         lat:37.6459, lng:127.0743},
+  {n:'하계',         lat:37.6362, lng:127.0710},
+  {n:'공릉',         lat:37.6262, lng:127.0733},
+  {n:'태릉입구',     lat:37.6188, lng:127.0724},
+  {n:'수유',         lat:37.6420, lng:127.0253},
+  {n:'미아사거리',   lat:37.6316, lng:127.0278},
+  {n:'번동',         lat:37.6344, lng:127.0434},
+  {n:'방학',         lat:37.6656, lng:127.0470},
+  // 성북
+  {n:'길음',         lat:37.6033, lng:127.0244},
+  {n:'성신여대입구', lat:37.5924, lng:127.0167},
+  {n:'한성대입구',   lat:37.5877, lng:127.0059},
+  {n:'혜화',         lat:37.5823, lng:127.0017},
+  {n:'안암',         lat:37.5869, lng:127.0296},
+  // 동대문·중랑
+  {n:'동대문',       lat:37.5714, lng:127.0113},
+  {n:'청량리',       lat:37.5802, lng:127.0457},
+  {n:'회기',         lat:37.5889, lng:127.0566},
+  {n:'외대앞',       lat:37.5924, lng:127.0575},
+  {n:'상봉',         lat:37.5971, lng:127.0848},
+  {n:'면목',         lat:37.5795, lng:127.0750},
+  {n:'신내',         lat:37.6036, lng:127.1025},
+  {n:'망우',         lat:37.5980, lng:127.0968},
+  // 종로·중구
+  {n:'경복궁',       lat:37.5759, lng:126.9770},
+  {n:'광화문',       lat:37.5715, lng:126.9766},
+  {n:'안국',         lat:37.5762, lng:126.9855},
+  {n:'종로3가',      lat:37.5706, lng:126.9918},
+  {n:'명동',         lat:37.5609, lng:126.9862},
+  {n:'을지로입구',   lat:37.5662, lng:126.9822},
+  {n:'시청',         lat:37.5657, lng:126.9769},
+  {n:'을지로3가',    lat:37.5657, lng:126.9930},
+  {n:'충무로',       lat:37.5615, lng:126.9934},
+  {n:'서울역',       lat:37.5547, lng:126.9706},
+  {n:'동대문역사문화공원',lat:37.5651, lng:127.0075},
+  // 성동·광진
+  {n:'왕십리',       lat:37.5614, lng:127.0374},
+  {n:'성수',         lat:37.5447, lng:127.0567},
+  {n:'뚝섬',         lat:37.5469, lng:127.0474},
+  {n:'건대입구',     lat:37.5402, lng:127.0704},
+  {n:'군자',         lat:37.5506, lng:127.0791},
+  {n:'서울숲',       lat:37.5444, lng:127.0426},
+  // 용산·이태원
+  {n:'이태원',       lat:37.5347, lng:126.9944},
+  {n:'한강진',       lat:37.5386, lng:127.0043},
+  {n:'녹사평',       lat:37.5378, lng:127.0003},
+  {n:'이촌',         lat:37.5228, lng:126.9614},
+  {n:'삼각지',       lat:37.5348, lng:126.9742},
+  {n:'남영',         lat:37.5387, lng:126.9716},
+  {n:'숙대입구',     lat:37.5423, lng:126.9722},
+  // 강서·양천
+  {n:'마곡나루',     lat:37.5648, lng:126.8253},
+  {n:'발산',         lat:37.5575, lng:126.8380},
+  {n:'가양',         lat:37.5601, lng:126.8537},
+  {n:'화곡',         lat:37.5356, lng:126.8527},
+  {n:'염창',         lat:37.5498, lng:126.8862},
+  {n:'당산',         lat:37.5344, lng:126.9013},
+  {n:'목동',         lat:37.5257, lng:126.8751},
+  {n:'신정네거리',   lat:37.5175, lng:126.8657},
+  // 영등포·구로·금천
+  {n:'여의도',       lat:37.5217, lng:126.9242},
+  {n:'영등포구청',   lat:37.5260, lng:126.8956},
+  {n:'신도림',       lat:37.5087, lng:126.8913},
+  {n:'구로디지털단지',lat:37.4853, lng:126.9012},
+  {n:'대림',         lat:37.4940, lng:126.8967},
+  {n:'가산디지털단지',lat:37.4807, lng:126.8820},
+  // 동작
+  {n:'노량진',       lat:37.5129, lng:126.9429},
+  {n:'흑석',         lat:37.5081, lng:126.9634},
+  {n:'동작',         lat:37.5094, lng:126.9797},
+  {n:'노들',         lat:37.5142, lng:126.9548},
+  // 관악
+  {n:'낙성대',       lat:37.4775, lng:126.9637},
+  {n:'서울대입구',   lat:37.4812, lng:126.9527},
+  {n:'봉천',         lat:37.4822, lng:126.9411},
+  {n:'신림',         lat:37.4843, lng:126.9297},
+];
+const STATIONS = STATIONS_RAW.map(s => ({
+  ...s,
+  x: (s.lng - 126.734) / 0.450 * 600,
+  y: (37.715 - s.lat) / 0.302 * 540,
+}));
 
 /* ══════════════════════════════════════════
    STATE
@@ -322,7 +440,7 @@ let state = 'idle';
 let mapRot = [0,90,180,270][Math.floor(Math.random()*4)];
 let pulling = false, pxC=0, pyC=0;
 const DART_HOME = {x:300, y:490};
-let hitDist=null, hitDong=null, hitLatLng=null;
+let hitDist=null, hitStation=null, hitLatLng=null;
 let raf=null, curtainProg=0;
 let kakaoKey = localStorage.getItem('sdt_kakao_key') || 'd34d46334dc32deae1b94065bd2f9a27';
 
@@ -527,7 +645,8 @@ function animFly(sx,sy,tx,ty,ang){
     else{
       drawDart(tx,ty,ang,true);
       const hit=findHit(tx,ty);
-      hitDist=hit.district; hitDong=hit.dong; hitLatLng=svgToLatLng(tx,ty);
+      hitDist=hit.district; hitStation=hit.station;
+      hitLatLng={lat:hitStation.lat, lng:hitStation.lng};
       highlightDistrict(hitDist); startReveal();
     }
   }
@@ -537,13 +656,15 @@ function animFly(sx,sy,tx,ty,ang){
 /* ── HIT DETECTION ── */
 function findHit(x,y){
   const cx=W/2,cy=H/2,a=-mapRot*Math.PI/180;
+  // de-rotate hit point back to canonical map orientation
   const rx=Math.cos(a)*(x-cx)-Math.sin(a)*(y-cy)+cx;
   const ry=Math.sin(a)*(x-cx)+Math.cos(a)*(y-cy)+cy;
+  // find district (구)
   let district=D.find(d=>pip(rx,ry,parsePts(d.p)));
   if(!district) district=D.reduce((b,d)=>Math.hypot(rx-d.cx,ry-d.cy)<Math.hypot(rx-b.cx,ry-b.cy)?d:b,D[0]);
-  const dongs=DONGS[district.n]||[];
-  const dong=dongs.length?dongs.reduce((b,d)=>Math.hypot(rx-d.x,ry-d.y)<Math.hypot(rx-b.x,ry-b.y)?d:b,dongs[0]):null;
-  return {district,dong};
+  // find globally nearest subway station
+  const station=STATIONS.reduce((b,s)=>Math.hypot(rx-s.x,ry-s.y)<Math.hypot(rx-b.x,ry-b.y)?s:b,STATIONS[0]);
+  return {district, station};
 }
 function parsePts(s){return s.trim().split(/\s+/).map(p=>{const[x,y]=p.split(',');return{x:+x,y:+y};});}
 function pip(px,py,poly){
@@ -578,11 +699,14 @@ function startReveal(){
 
 /* ── RESULT ── */
 function showResult(){
-  const loc=hitDong?`${hitDist.n} ${hitDong.n}`:hitDist.n;
+  const stName=hitStation?hitStation.n+'역':hitDist.n;
   document.getElementById('resGu').textContent=hitDist.n;
-  document.getElementById('resDong').textContent=hitDong?hitDong.n:'';
-  // 카카오맵 링크
-  const mapUrl=`https://map.kakao.com/link/map/${encodeURIComponent(loc)},${hitLatLng.lat},${hitLatLng.lng}`;
+  document.getElementById('resDong').innerHTML=hitStation
+    ?`<span style="font-size:18px;margin-right:4px">🚇</span>${stName}`
+    :'';
+  // 카카오맵 링크 (역 좌표 기준)
+  const {lat,lng}=hitLatLng;
+  const mapUrl=`https://map.kakao.com/link/map/${encodeURIComponent(stName)},${lat},${lng}`;
   document.getElementById('mapLink').href=mapUrl;
   document.getElementById('aiLoading').style.display='block';
   document.getElementById('aiLoading').innerHTML='<div class="ai-spinner"></div><div class="loading-txt">주변 장소를 불러오는 중...</div>';
@@ -630,7 +754,7 @@ function renderRecs({attractions,restaurants,cafes}){
           <div class="place-cat">${shortCat(p.category_name)}</div>
           <div class="place-addr">${p.road_address_name||p.address_name}</div>
         </a></li>`).join('')
-      :'<li class="place-empty">반경 800m 내 결과 없음</li>';
+      :'<li class="place-empty">주변 결과 없음</li>';
   };
   fill('list1',attractions); fill('list2',restaurants); fill('list3',cafes);
   document.getElementById('resGrid').style.display='grid';
@@ -639,7 +763,7 @@ function renderRecs({attractions,restaurants,cafes}){
 /* ── RESET ── */
 function resetGame(){
   if(raf) cancelAnimationFrame(raf);
-  state='idle';pulling=false;curtainProg=0;hitDist=hitDong=hitLatLng=null;
+  state='idle';pulling=false;curtainProg=0;hitDist=hitStation=hitLatLng=null;
   mapRot=[0,90,180,270][Math.floor(Math.random()*4)];
   buildMap(); drawCurtain(0); drawDart(DART_HOME.x,DART_HOME.y,-90,false);
   document.getElementById('resultScreen').classList.add('out');
