@@ -729,10 +729,10 @@ async function fetchRecs(radius=800){
   const base='https://dapi.kakao.com/v2/local/search/category.json';
   try{
     const[at,ct,fd,ce]=await Promise.all([
-      fetch(`${base}?category_group_code=AT4&x=${lng}&y=${lat}&radius=${radius}&sort=distance&size=5`,{headers}).then(r=>r.json()),
-      fetch(`${base}?category_group_code=CT1&x=${lng}&y=${lat}&radius=${radius}&sort=distance&size=5`,{headers}).then(r=>r.json()),
-      fetch(`${base}?category_group_code=FD6&x=${lng}&y=${lat}&radius=${radius}&sort=distance&size=5`,{headers}).then(r=>r.json()),
-      fetch(`${base}?category_group_code=CE7&x=${lng}&y=${lat}&radius=${radius}&sort=distance&size=5`,{headers}).then(r=>r.json()),
+      fetch(`${base}?category_group_code=AT4&x=${lng}&y=${lat}&radius=${radius}&sort=accuracy&size=5`,{headers}).then(r=>r.json()),
+      fetch(`${base}?category_group_code=CT1&x=${lng}&y=${lat}&radius=${radius}&sort=accuracy&size=5`,{headers}).then(r=>r.json()),
+      fetch(`${base}?category_group_code=FD6&x=${lng}&y=${lat}&radius=${radius}&sort=accuracy&size=5`,{headers}).then(r=>r.json()),
+      fetch(`${base}?category_group_code=CE7&x=${lng}&y=${lat}&radius=${radius}&sort=accuracy&size=5`,{headers}).then(r=>r.json()),
     ]);
     const attractions=[...(at.documents||[]),...(ct.documents||[])].sort((a,b)=>+a.distance-+b.distance).slice(0,4);
     const restaurants=(fd.documents||[]).slice(0,4);
