@@ -446,6 +446,17 @@ const DART_HOME = {x:300, y:H+130}; // 발사대 중앙 (670)
 let hitDist=null, hitStation=null, hitLatLng=null;
 let raf=null, curtainProg=0;
 let kakaoKey = localStorage.getItem('sdt_kakao_key') || 'd34d46334dc32deae1b94065bd2f9a27';
+let SD = []; // 셔플된 구 배열 (매 게임마다 재생성)
+
+/* 구 이름을 폴리곤 위치와 무작위로 재조합 */
+function shuffleDistricts(){
+  const names = D.map(d=>d.n);
+  for(let i=names.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [names[i],names[j]]=[names[j],names[i]];
+  }
+  SD = D.map((d,i)=>({...d, n:names[i]}));
+}
 
 function svgToLatLng(sx, sy) {
   const cx=W/2, cy=H/2, a=-mapRot*Math.PI/180;
@@ -492,6 +503,7 @@ function applyArenaSize() {
   document.getElementById('dartCvs').height = CANVAS_H;
   applyArenaSize();
   window.addEventListener('resize', applyArenaSize);
+  shuffleDistricts();
   buildMap(); drawCurtain(0); drawDart(DART_HOME.x,DART_HOME.y,-90,false);
   const dc = document.getElementById('dartCvs');
   dc.addEventListener('mousedown', onDown);
@@ -512,7 +524,7 @@ function buildMap() {
   const g = mkSvg('g');
   g.setAttribute('id','mapG');
   g.setAttribute('transform',`rotate(${mapRot},${W/2},${H/2})`);
-  D.forEach((d,i)=>{
+  SD.forEach((d,i)=>{
     const poly=mkSvg('polygon');
     setAttr(poly,{points:d.p,fill:d.c,stroke:'#090c16','stroke-width':'1.5','data-i':i});
     g.appendChild(poly);
@@ -728,14 +740,15 @@ function findHit(x,y){
   // de-rotate hit point back to canonical map orientation
   const rx=Math.cos(a)*(x-cx)-Math.sin(a)*(y-cy)+cx;
   const ry=Math.sin(a)*(x-cx)+Math.cos(a)*(y-cy)+cy;
-  // find district (구)
-  let district=D.find(d=>pip(rx,ry,parsePts(d.p)));
-  if(!district) district=D.reduce((b,d)=>Math.hypot(rx-d.cx,ry-d.cy)<Math.hypot(rx-b.cx,ry-b.cy)?d:b,D[0]);
+  // SD 기준으로 히트 구 탐색 (셔플된 이름 반영)
+  let district=SD.find(d=>pip(rx,ry,parsePts(d.p)));
+  if(!district) district=SD.reduce((b,d)=>Math.hypot(rx-d.cx,ry-d.cy)<Math.hypot(rx-b.cx,ry-b.cy)?d:b,SD[0]);
   // 역의 gu 필드(행정구역 기준)로 정확히 필터링 → 구-역 불일치 완전 차단
   const inDistrict=STATIONS.filter(s=>s.gu===district.n);
-  // 해당 구에 역이 없으면(금천구 등 역이 적은 구) 전역 최근접 폴백
+  // 해당 구에 역이 없으면(금천구 등 역이 적은 구) 전역 폴백
   const pool=inDistrict.length?inDistrict:STATIONS;
-  const station=pool.reduce((b,s)=>Math.hypot(rx-s.x,ry-s.y)<Math.hypot(rx-b.x,ry-b.y)?s:b,pool[0]);
+  // 무작위 역 선택
+  const station=pool[Math.floor(Math.random()*pool.length)];
   return {district, station};
 }
 function parsePts(s){return s.trim().split(/\s+/).map(p=>{const[x,y]=p.split(',');return{x:+x,y:+y};});}
@@ -748,7 +761,7 @@ function pip(px,py,poly){
   return inside;
 }
 function highlightDistrict(d){
-  const idx=D.indexOf(d);
+  const idx=SD.indexOf(d);
   const poly=document.querySelector(`[data-i="${idx}"]`);
   if(poly){poly.setAttribute('fill','#f5a62370');poly.setAttribute('stroke','#f5a623');poly.setAttribute('stroke-width','2');}
   const lbl=document.getElementById('lbl'+idx);
@@ -838,6 +851,7 @@ function resetGame(){
   if(raf) cancelAnimationFrame(raf);
   state='idle';pulling=false;curtainProg=0;hitDist=hitStation=hitLatLng=null;
   mapRot=[0,90,180,270][Math.floor(Math.random()*4)];
+  shuffleDistricts();
   buildMap(); drawCurtain(0); drawDart(DART_HOME.x,DART_HOME.y,-90,false);
   document.getElementById('resultScreen').classList.add('out');
   document.getElementById('gameScreen').classList.remove('out');
