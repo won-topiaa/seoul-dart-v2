@@ -475,7 +475,7 @@ function drawSlingshot(ctx,dx,dy){
 }
 
 /* ── MECHANICS ── */
-const MAX_PULL=220;
+const MAX_PULL=360;
 function getXY(e){
   const r=document.getElementById('dartCvs').getBoundingClientRect();
   return {x:(e.clientX-r.left)*(W/r.width), y:(e.clientY-r.top)*(H/r.height)};
@@ -502,7 +502,7 @@ function onUp(e){
   if(power<25){cancelPull();return;}
   pulling=false; state='fly';
   const nx=fdx/power, ny=fdy/power;
-  const flyD=power*2.8+Math.random()*80-40;
+  const flyD=power*2.2+Math.random()*60-30;
   const tx=Math.max(15,Math.min(W-15,pxC+nx*flyD));
   const ty=Math.max(15,Math.min(H-80,pyC+ny*flyD));
   animFly(pxC,pyC,tx,ty,Math.atan2(-ny,-nx)*180/Math.PI-90);
@@ -593,19 +593,25 @@ function showResult(){
 }
 
 /* ── KAKAO LOCAL API ── */
-async function fetchRecs(){
+async function fetchRecs(radius=1500){
   const {lat,lng}=hitLatLng;
   const headers={'Authorization':`KakaoAK ${kakaoKey}`};
   const base='https://dapi.kakao.com/v2/local/search/category.json';
   try{
     const[at,ct,fd,ce]=await Promise.all([
-      fetch(`${base}?category_group_code=AT4&x=${lng}&y=${lat}&radius=800&sort=distance&size=5`,{headers}).then(r=>r.json()),
-      fetch(`${base}?category_group_code=CT1&x=${lng}&y=${lat}&radius=800&sort=distance&size=5`,{headers}).then(r=>r.json()),
-      fetch(`${base}?category_group_code=FD6&x=${lng}&y=${lat}&radius=800&sort=distance&size=5`,{headers}).then(r=>r.json()),
-      fetch(`${base}?category_group_code=CE7&x=${lng}&y=${lat}&radius=800&sort=distance&size=5`,{headers}).then(r=>r.json()),
+      fetch(`${base}?category_group_code=AT4&x=${lng}&y=${lat}&radius=${radius}&sort=distance&size=5`,{headers}).then(r=>r.json()),
+      fetch(`${base}?category_group_code=CT1&x=${lng}&y=${lat}&radius=${radius}&sort=distance&size=5`,{headers}).then(r=>r.json()),
+      fetch(`${base}?category_group_code=FD6&x=${lng}&y=${lat}&radius=${radius}&sort=distance&size=5`,{headers}).then(r=>r.json()),
+      fetch(`${base}?category_group_code=CE7&x=${lng}&y=${lat}&radius=${radius}&sort=distance&size=5`,{headers}).then(r=>r.json()),
     ]);
     const attractions=[...(at.documents||[]),...(ct.documents||[])].sort((a,b)=>+a.distance-+b.distance).slice(0,4);
-    renderRecs({attractions, restaurants:(fd.documents||[]).slice(0,4), cafes:(ce.documents||[]).slice(0,4)});
+    const restaurants=(fd.documents||[]).slice(0,4);
+    const cafes=(ce.documents||[]).slice(0,4);
+    // 결과가 전부 비었으면 반경 넓혀서 재시도
+    if(radius<3000 && !attractions.length && !restaurants.length && !cafes.length){
+      return fetchRecs(3000);
+    }
+    renderRecs({attractions, restaurants, cafes});
   }catch(err){
     document.getElementById('aiLoading').innerHTML=
       `<div style="color:var(--red);font-size:13px;padding:20px 0">⚠ 장소 검색 실패: ${err.message}<br><br>
