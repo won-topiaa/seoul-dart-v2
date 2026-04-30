@@ -1846,6 +1846,7 @@ function resetCertSection(){
 function handlePhotoUpload(input){
   const file = input.files[0];
   if(!file) return;
+  if(!file.type.startsWith('image/')){ alert('이미지 파일만 업로드할 수 있어요 📸'); input.value=''; return; }
   const reader = new FileReader();
   reader.onload = e => {
     certPhotoDataUrl = e.target.result;
@@ -1939,16 +1940,20 @@ function generateShareImage(){
     const dataUrl = canvas.toDataURL('image/jpeg', 0.93);
     document.getElementById('shareImg').src = dataUrl;
     document.getElementById('shareSection').style.display='block';
-    // 네이티브 공유 버튼 (모바일)
-    if(navigator.share && navigator.canShare){
-      document.getElementById('btnShareNative').style.display='flex';
-    }
+    // 네이티브 공유 버튼 (모바일 — 파일 공유 가능 여부까지 검사)
+    try{
+      const testFile = new File([''],'test.jpg',{type:'image/jpeg'});
+      if(navigator.share && navigator.canShare && navigator.canShare({files:[testFile]})){
+        document.getElementById('btnShareNative').style.display='flex';
+      }
+    }catch(e){}
     window._shareDataUrl = dataUrl;
   };
   photo.src = certPhotoDataUrl;
 }
 
 function downloadShareImg(){
+  if(!window._shareDataUrl) return;
   const a = document.createElement('a');
   a.href = window._shareDataUrl;
   const guName = hitDist?.n || '서울';
@@ -1957,6 +1962,7 @@ function downloadShareImg(){
 }
 
 async function nativeShare(){
+  if(!window._shareDataUrl) return;
   try{
     const blob = await (await fetch(window._shareDataUrl)).blob();
     const file = new File([blob],'서울다트.jpg',{type:'image/jpeg'});
@@ -1990,6 +1996,7 @@ function renderStampGrid(){
 }
 
 function openStamp(){
+  if(!document.getElementById('stampScreen').classList.contains('out')) return; // 이미 열려 있으면 무시
   const screens = ['moodScreen','homeScreen','gameScreen','resultScreen'];
   stampPrevScreen = screens.find(id => !document.getElementById(id).classList.contains('out')) || 'moodScreen';
   document.getElementById(stampPrevScreen).classList.add('out');
