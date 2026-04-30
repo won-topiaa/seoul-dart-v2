@@ -166,6 +166,63 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 /* ── DISTRICT PULSE ── */
 @keyframes distPulse{0%,100%{opacity:.6;transform:scale(1);}50%{opacity:1;transform:scale(1.15);}}
 .dist-label-hit{animation:distPulse .9s ease-in-out 3;}
+
+/* ── HOME SCREEN ── */
+#homeScreen{
+  justify-content:center;
+  padding:74px 0 24px;
+  align-items:flex-start;
+}
+.home-inner{
+  width:100%;max-width:360px;
+  padding:0 30px;
+  display:flex;flex-direction:column;
+}
+.home-kicker{
+  font-size:11px;font-weight:600;letter-spacing:.4px;
+  color:var(--txt3);margin-bottom:26px;
+}
+.home-title{
+  font-size:72px;font-weight:900;line-height:.86;
+  letter-spacing:-5px;color:var(--txt);
+  margin-bottom:26px;
+}
+.home-title .hl{
+  color:var(--gold);display:block;
+}
+.home-desc{
+  font-size:15px;line-height:1.7;
+  color:var(--txt2);margin-bottom:34px;
+  font-weight:400;
+}
+.home-list{
+  list-style:none;display:flex;flex-direction:column;
+  gap:11px;margin-bottom:42px;
+}
+.home-list li{
+  display:flex;align-items:flex-start;gap:9px;
+  font-size:13px;color:var(--txt2);line-height:1.45;
+}
+.home-list li::before{
+  content:'—';color:var(--gold);
+  flex-shrink:0;font-size:11px;margin-top:2px;
+}
+.btn-start{
+  padding:16px 22px;
+  background:var(--gold);color:#07090d;
+  border:none;border-radius:var(--r12);
+  font-size:15px;font-weight:900;cursor:pointer;
+  font-family:inherit;letter-spacing:-.3px;
+  display:flex;align-items:center;
+  justify-content:space-between;
+  transition:opacity .12s;
+}
+.btn-start:hover{opacity:.86;}
+.btn-start .arr{font-size:19px;font-weight:300;}
+.home-foot{
+  font-size:11px;color:var(--txt3);
+  margin-top:14px;padding-left:2px;
+}
 </style>
 </head>
 <body>
@@ -178,8 +235,29 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   </div>
 </header>
 
+<!-- HOME SCREEN -->
+<div class="screen" id="homeScreen">
+  <div class="home-inner">
+    <p class="home-kicker">오늘의 서울 행선지 결정기 🎯</p>
+    <h1 class="home-title">서울<span class="hl">다트.</span></h1>
+    <p class="home-desc">
+      어디 갈지 모르겠을 때<br>
+      그냥 던져서 정해버려요
+    </p>
+    <ul class="home-list">
+      <li>서울 25개 구 지도 — 매번 무작위로 섞임</li>
+      <li>꽂힌 구에서 지하철역 랜덤 선택</li>
+      <li>역 주변 맛집 · 카페 자동으로 찾아줌</li>
+    </ul>
+    <button class="btn-start" onclick="startGame()">
+      다트 던지러 가기 <span class="arr">→</span>
+    </button>
+    <p class="home-foot">P형 인간 우유부단 탈출 프로젝트</p>
+  </div>
+</div>
+
 <!-- GAME SCREEN -->
-<div class="screen" id="gameScreen">
+<div class="screen out" id="gameScreen">
   <div id="arenaWrap">
     <svg id="seoulSvg" xmlns="http://www.w3.org/2000/svg"></svg>
     <canvas id="curtainCvs"></canvas>
@@ -572,11 +650,13 @@ function drawCurtain(prog) {
     ctx.fillStyle=gE; ctx.fillRect(0,covH-2,W,20);
   }
   if(prog<0.05){
-    ctx.globalAlpha=.18; ctx.fillStyle='#90b878';
-    ctx.font='bold 13px sans-serif'; ctx.textAlign='center';
-    ctx.fillText('⛺ 천막으로 가려진 서울 지도',W/2,H/2-16);
-    ctx.font='10px sans-serif'; ctx.globalAlpha=.1;
-    ctx.fillText('지도는 무작위로 회전되어 방향을 알 수 없어요',W/2,H/2+12);
+    ctx.textAlign='center';
+    ctx.globalAlpha=.65; ctx.fillStyle='#d4b55a';
+    ctx.font='bold 15px -apple-system,sans-serif';
+    ctx.fillText('🎯  지도를 향해 다트를 던지세요!',W/2,H/2-10);
+    ctx.globalAlpha=.22; ctx.fillStyle='#8aaa70';
+    ctx.font='10px -apple-system,sans-serif';
+    ctx.fillText('지도는 무작위로 섞여 방향을 알 수 없어요',W/2,H/2+14);
     ctx.globalAlpha=1;
   }
 }
@@ -844,6 +924,12 @@ function renderRecs({attractions,restaurants,cafes}){
   };
   fill('list1',attractions); fill('list2',restaurants); fill('list3',cafes);
   document.getElementById('resGrid').style.display='grid';
+}
+
+/* ── HOME → GAME ── */
+function startGame(){
+  document.getElementById('homeScreen').classList.add('out');
+  document.getElementById('gameScreen').classList.remove('out');
 }
 
 /* ── RESET ── */
