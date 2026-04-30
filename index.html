@@ -1390,6 +1390,10 @@ function showResult(){
   document.getElementById('mapLink').href=mapUrl;
   document.getElementById('gameScreen').classList.add('out');
   document.getElementById('resultScreen').classList.remove('out');
+  // 방어적 초기화 — 이전 결과 잔재 제거
+  document.getElementById('courseSection').style.display='none';
+  document.getElementById('resMoodWrap').style.display='none';
+  document.getElementById('resGrid').style.display='none';
 
   if(gameMode==='local'){
     // 소상공인 모드 — 카카오 API 사용 안 함
@@ -1557,7 +1561,7 @@ function selectMood(id){
     c.classList.toggle('selected',c.dataset.id===id);
   });
   const btn=document.getElementById('moodNextBtn');
-  btn.textContent=`${selectedMood.emoji} ${selectedMood.label}으로 출발 →`;
+  btn.innerHTML=`${selectedMood.emoji} ${selectedMood.label}으로 출발 →`;
   btn.classList.add('ready');
 }
 
@@ -1584,7 +1588,7 @@ function goHome(){
   selectedMood=null;
   document.querySelectorAll('.mood-chip').forEach(c=>c.classList.remove('selected'));
   const btn=document.getElementById('moodNextBtn');
-  btn.textContent='출발 →';
+  btn.innerHTML='출발 →';
   btn.classList.remove('ready');
   document.getElementById('resultScreen').classList.add('out');
   document.getElementById('gameScreen').classList.add('out');
