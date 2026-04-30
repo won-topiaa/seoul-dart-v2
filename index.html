@@ -461,6 +461,96 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .course-smeta{ font-size:10px;color:var(--txt3); }
 .course-arrow{ font-size:13px;color:var(--txt3);padding:2px 0;flex-shrink:0;margin-top:2px; }
 
+/* ── CERT SECTION (방문 인증) ── */
+.cert-section{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:var(--r20);padding:22px;
+  margin-bottom:16px;
+  display:flex;flex-direction:column;gap:16px;
+}
+.cert-hd{ display:flex;align-items:flex-start;gap:12px; }
+.cert-hd-ico{ font-size:28px;flex-shrink:0;line-height:1; }
+.cert-hd-title{ font-size:15px;font-weight:800;color:var(--txt);margin-bottom:4px; }
+.cert-hd-desc{ font-size:12px;color:var(--txt2);line-height:1.5; }
+.cert-preview{
+  border-radius:var(--r16);overflow:hidden;
+  position:relative;max-height:260px;
+  background:var(--bg3);
+}
+.cert-preview img{
+  width:100%;display:block;
+  object-fit:cover;max-height:260px;
+}
+.cert-preview-del{
+  position:absolute;top:8px;right:8px;
+  background:rgba(0,0,0,.65);border:none;
+  color:#fff;border-radius:20px;padding:4px 10px;
+  font-size:11px;font-weight:700;cursor:pointer;
+}
+.cert-btns{ display:flex;gap:10px;flex-wrap:wrap; }
+.btn-cert-upload{
+  flex:1;min-width:120px;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  padding:13px 18px;
+  background:var(--bg3);border:1px solid var(--border2);
+  color:var(--txt2);border-radius:var(--r12);
+  font-size:13px;font-weight:700;cursor:pointer;
+  transition:all .15s;font-family:inherit;
+}
+.btn-cert-upload:hover{ border-color:var(--gold);color:var(--gold); }
+.btn-cert-confirm{
+  flex:1;min-width:160px;
+  padding:13px 18px;
+  background:linear-gradient(135deg,#f5a623,#ff7a35);
+  color:#09090f;border:none;border-radius:var(--r12);
+  font-size:13px;font-weight:900;cursor:pointer;
+  font-family:inherit;transition:opacity .15s;
+  box-shadow:0 4px 16px rgba(245,166,35,.25);
+}
+.btn-cert-confirm:hover{ opacity:.88; }
+/* 인증 완료 상태 */
+.cert-done{
+  display:flex;align-items:center;gap:10px;
+  background:linear-gradient(135deg,rgba(245,166,35,.1),var(--bg2));
+  border:1px solid rgba(245,166,35,.3);
+  border-radius:var(--r12);padding:14px 16px;
+  font-size:13px;font-weight:700;color:var(--gold);
+}
+.cert-done-sub{ font-size:11px;color:var(--txt2);margin-top:3px;font-weight:500; }
+/* 공유 이미지 */
+.share-section{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:var(--r20);padding:20px;
+  margin-bottom:16px;
+}
+.share-section-title{
+  font-size:12px;font-weight:700;color:var(--txt3);
+  letter-spacing:.5px;text-transform:uppercase;margin-bottom:12px;
+}
+.share-canvas-wrap{
+  border-radius:var(--r16);overflow:hidden;
+  margin-bottom:12px;
+}
+.share-canvas-wrap img{ width:100%;display:block; }
+.share-btns{ display:flex;gap:10px; }
+.btn-share-dl{
+  flex:1;padding:12px;
+  background:var(--bg3);border:1px solid var(--border2);
+  color:var(--txt2);border-radius:var(--r12);
+  font-size:13px;font-weight:700;cursor:pointer;
+  font-family:inherit;transition:all .15s;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+}
+.btn-share-dl:hover{ border-color:var(--gold);color:var(--gold); }
+.btn-share-native{
+  flex:1;padding:12px;
+  background:var(--green);color:#07090d;border:none;
+  border-radius:var(--r12);font-size:13px;font-weight:900;
+  cursor:pointer;font-family:inherit;transition:opacity .15s;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+}
+.btn-share-native:hover{ opacity:.88; }
+
 /* ── STAMP TOAST (결과 화면) ── */
 .stamp-toast{
   display:flex;align-items:center;gap:10px;
@@ -696,14 +786,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <div><a class="map-link" id="mapLink" target="_blank" rel="noopener">🗺 카카오맵에서 보기</a></div>
     </div>
 
-    <div id="stampToast" style="display:none" class="stamp-toast">
-      <span class="stamp-toast-ico">🗂</span>
-      <div>
-        <div id="stampToastMsg"></div>
-        <div class="stamp-toast-sub">헤더의 스탬프 버튼에서 컬렉션을 확인하세요</div>
-      </div>
-    </div>
-
     <div id="aiOut">
       <div class="ai-loading" id="aiLoading">
         <div class="ai-spinner"></div>
@@ -730,6 +812,49 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     </div><!-- /aiOut -->
 
     <div id="localOut" style="display:none" class="local-out-wrap"></div>
+
+    <!-- 방문 인증 섹션 (dart 모드 전용) -->
+    <div id="certSection" style="display:none" class="cert-section">
+      <div class="cert-hd">
+        <span class="cert-hd-ico">📸</span>
+        <div>
+          <div class="cert-hd-title">방문 인증하고 스탬프 받기</div>
+          <div class="cert-hd-desc">현장 사진을 올려야 여행 기록이 인정됩니다<br>인증 후 공유 이미지도 자동 생성돼요</div>
+        </div>
+      </div>
+      <div id="certPreview" style="display:none" class="cert-preview">
+        <img id="certImg" alt="인증 사진">
+        <button class="cert-preview-del" onclick="removeCertPhoto()">✕ 다시 선택</button>
+      </div>
+      <div class="cert-btns" id="certBtns">
+        <label class="btn-cert-upload">
+          📷 사진 선택
+          <input type="file" accept="image/*" id="certFileInput" onchange="handlePhotoUpload(this)" style="display:none">
+        </label>
+        <button class="btn-cert-confirm" id="btnCertConfirm" style="display:none" onclick="confirmVisit()">
+          ✅ 인증 완료 · 공유 이미지 생성
+        </button>
+      </div>
+      <div id="certDone" style="display:none" class="cert-done">
+        <span style="font-size:22px">🗂</span>
+        <div>
+          <div id="certDoneMsg"></div>
+          <div class="cert-done-sub">스탬프 컬렉션에서 확인하세요</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 공유 이미지 섹션 -->
+    <div id="shareSection" style="display:none" class="share-section">
+      <div class="share-section-title">📤 공유 이미지</div>
+      <div class="share-canvas-wrap">
+        <img id="shareImg" alt="공유 이미지">
+      </div>
+      <div class="share-btns">
+        <button class="btn-share-dl" onclick="downloadShareImg()">⬇ 이미지 저장</button>
+        <button class="btn-share-native" id="btnShareNative" onclick="nativeShare()" style="display:none">↗ 공유하기</button>
+      </div>
+    </div>
 
     <div class="res-actions">
       <button class="btn-home" onclick="goHome()">← 홈으로</button>
@@ -1541,21 +1666,9 @@ function showResult(){
   document.getElementById('courseSection').style.display='none';
   document.getElementById('resMoodWrap').style.display='none';
   document.getElementById('resGrid').style.display='none';
-  document.getElementById('stampToast').style.display='none';
-
-  // 스탬프 기록 (dart 모드 한정)
-  if(gameMode==='dart' && hitDist){
-    const isNew = markVisited(hitDist.n);
-    const toast = document.getElementById('stampToast');
-    const msg   = document.getElementById('stampToastMsg');
-    if(isNew){
-      msg.textContent = `✨ ${hitDist.n} 첫 방문! 스탬프 획득 (${visitedGu.size}/25)`;
-      toast.style.display='flex';
-    } else {
-      msg.textContent = `${hitDist.n} 재방문 — 스탬프 컬렉션 ${visitedGu.size}/25`;
-      toast.style.display='flex';
-    }
-  }
+  document.getElementById('certSection').style.display='none';
+  document.getElementById('shareSection').style.display='none';
+  resetCertSection();
 
   if(gameMode==='local'){
     // 소상공인 모드 — 카카오 API 사용 안 함
@@ -1564,13 +1677,14 @@ function showResult(){
     document.getElementById('resRange').textContent='등록된 소상공인 가게';
     renderLocalResult(hitDist.n);
   } else {
-    // 다트 모드 — 카카오 장소 검색
+    // 다트 모드 — 카카오 장소 검색 + 방문 인증 섹션
     document.getElementById('aiOut').style.display='block';
     document.getElementById('localOut').style.display='none';
     document.getElementById('resRange').textContent='역 반경 800m 주변 장소';
     document.getElementById('aiLoading').style.display='block';
     document.getElementById('aiLoading').innerHTML='<div class="ai-spinner"></div><div class="loading-txt">주변 장소를 불러오는 중...</div>';
     document.getElementById('resGrid').style.display='none';
+    document.getElementById('certSection').style.display='flex';
     fetchRecs();
   }
 }
@@ -1715,6 +1829,145 @@ function markVisited(guName){
   return isNew;
 }
 
+/* ── 방문 인증 & 공유 이미지 ── */
+let certPhotoDataUrl = null;
+
+function resetCertSection(){
+  certPhotoDataUrl = null;
+  const fi = document.getElementById('certFileInput');
+  if(fi) fi.value='';
+  document.getElementById('certPreview').style.display='none';
+  document.getElementById('certBtns').style.display='flex';
+  document.getElementById('btnCertConfirm').style.display='none';
+  document.getElementById('certDone').style.display='none';
+  document.getElementById('shareSection').style.display='none';
+}
+
+function handlePhotoUpload(input){
+  const file = input.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    certPhotoDataUrl = e.target.result;
+    const img = document.getElementById('certImg');
+    img.src = certPhotoDataUrl;
+    document.getElementById('certPreview').style.display='block';
+    document.getElementById('btnCertConfirm').style.display='flex';
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeCertPhoto(){
+  certPhotoDataUrl = null;
+  document.getElementById('certFileInput').value='';
+  document.getElementById('certPreview').style.display='none';
+  document.getElementById('btnCertConfirm').style.display='none';
+}
+
+function confirmVisit(){
+  if(!certPhotoDataUrl || !hitDist) return;
+  // 스탬프 기록
+  const isNew = markVisited(hitDist.n);
+  // 완료 UI
+  document.getElementById('certBtns').style.display='none';
+  document.getElementById('certPreview').style.display='none';
+  const doneEl = document.getElementById('certDone');
+  const doneMsg = document.getElementById('certDoneMsg');
+  doneMsg.textContent = isNew
+    ? `✨ ${hitDist.n} 첫 방문! 스탬프 획득 (${visitedGu.size}/25)`
+    : `${hitDist.n} 재방문 인증 완료 (${visitedGu.size}/25)`;
+  doneEl.style.display='flex';
+  // 공유 이미지 생성
+  generateShareImage();
+}
+
+function generateShareImage(){
+  const SIZE = 1080;
+  const canvas = document.createElement('canvas');
+  canvas.width = SIZE; canvas.height = SIZE;
+  const ctx = canvas.getContext('2d');
+
+  const photo = new Image();
+  photo.onload = () => {
+    // 1. 사진 커버 필
+    const s = Math.max(SIZE/photo.width, SIZE/photo.height);
+    const sw = SIZE/s, sh = SIZE/s;
+    const sx = (photo.width-sw)/2, sy = (photo.height-sh)/2;
+    ctx.drawImage(photo, sx, sy, sw, sh, 0, 0, SIZE, SIZE);
+
+    // 2. 하단 그라디언트 오버레이
+    const grad = ctx.createLinearGradient(0, SIZE*0.38, 0, SIZE);
+    grad.addColorStop(0,'rgba(9,12,20,0)');
+    grad.addColorStop(0.55,'rgba(9,12,20,.82)');
+    grad.addColorStop(1,'rgba(9,12,20,.97)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, SIZE, SIZE);
+
+    // 3. 상단 로고
+    ctx.font = '700 32px -apple-system, sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,.55)';
+    ctx.textAlign = 'left';
+    ctx.fillText('서울다트.', 54, 64);
+
+    // 4. 구 이름 (크게)
+    const guName = hitDist?.n || '';
+    ctx.font = '900 108px -apple-system, sans-serif';
+    ctx.fillStyle = '#f5a623';
+    ctx.textAlign = 'left';
+    ctx.fillText(guName, 54, SIZE - 240);
+
+    // 5. 역 이름
+    const stName = hitStation ? `🚇 ${hitStation.n}역` : '';
+    ctx.font = '700 46px -apple-system, sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,.9)';
+    ctx.fillText(stName, 54, SIZE - 168);
+
+    // 6. 기분 + 날짜
+    const moodStr = selectedMood ? `${selectedMood.emoji} ${selectedMood.label}` : '';
+    const dateStr = new Date().toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric'});
+    ctx.font = '500 34px -apple-system, sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,.55)';
+    ctx.fillText(`${moodStr}   ${dateStr}`, 54, SIZE - 100);
+
+    // 7. URL
+    ctx.font = '500 26px -apple-system, sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,.3)';
+    ctx.textAlign = 'right';
+    ctx.fillText('won-topiaa.github.io/seoul-dart-v2', SIZE-54, SIZE-50);
+
+    // 결과 표시
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.93);
+    document.getElementById('shareImg').src = dataUrl;
+    document.getElementById('shareSection').style.display='block';
+    // 네이티브 공유 버튼 (모바일)
+    if(navigator.share && navigator.canShare){
+      document.getElementById('btnShareNative').style.display='flex';
+    }
+    window._shareDataUrl = dataUrl;
+  };
+  photo.src = certPhotoDataUrl;
+}
+
+function downloadShareImg(){
+  const a = document.createElement('a');
+  a.href = window._shareDataUrl;
+  const guName = hitDist?.n || '서울';
+  a.download = `서울다트_${guName}_${new Date().toISOString().slice(0,10)}.jpg`;
+  a.click();
+}
+
+async function nativeShare(){
+  try{
+    const blob = await (await fetch(window._shareDataUrl)).blob();
+    const file = new File([blob],'서울다트.jpg',{type:'image/jpeg'});
+    await navigator.share({
+      title:`서울다트 — ${hitDist?.n}`,
+      text:`오늘 다트로 ${hitDist?.n} 다녀왔어요 🎯`,
+      files:[file]
+    });
+  }catch(e){ console.log('share cancelled'); }
+}
+
 function renderStampGrid(){
   const done = visitedGu.size;
   document.getElementById('stampDone').textContent = done;
@@ -1789,6 +2042,9 @@ function goHome(){
   document.getElementById('courseSection').style.display='none';
   document.getElementById('resMoodWrap').style.display='none';
   document.getElementById('resGrid').style.display='none';
+  document.getElementById('certSection').style.display='none';
+  document.getElementById('shareSection').style.display='none';
+  resetCertSection();
   // 기분 선택으로 돌아가기 (초기화)
   selectedMood=null;
   document.querySelectorAll('.mood-chip').forEach(c=>c.classList.remove('selected'));
@@ -1821,6 +2077,9 @@ function resetGame(){
   document.getElementById('courseSection').style.display='none';
   document.getElementById('resMoodWrap').style.display='none';
   document.getElementById('resGrid').style.display='none';
+  document.getElementById('certSection').style.display='none';
+  document.getElementById('shareSection').style.display='none';
+  resetCertSection();
   document.getElementById('resultScreen').classList.add('out');
   document.getElementById('gameScreen').classList.remove('out');
 }
