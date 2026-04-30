@@ -29,7 +29,7 @@ a,button,label,[role="button"]{-webkit-tap-highlight-color:transparent;touch-act
 .hdr{position:fixed;top:0;left:0;right:0;z-index:300;
   background:rgba(9,12,20,.88);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
   border-bottom:1px solid var(--border);
-  padding:10px max(20px,env(safe-area-inset-left)) 10px max(20px,env(safe-area-inset-left));
+  padding:10px max(20px,env(safe-area-inset-right)) 10px max(20px,env(safe-area-inset-left));
   padding-top:max(10px,env(safe-area-inset-top));
   display:flex;align-items:center;gap:10px;}
 .hdr-logo{width:32px;height:32px;background:linear-gradient(135deg,#f5a623,#ff6b35);border-radius:9px;
@@ -1457,9 +1457,13 @@ const COURSE_NAMES = {
 let selectedMood = null;
 
 /* ── STAMP STATE ── */
-let visitedGu = new Set(JSON.parse(localStorage.getItem('sdt_visited') || '[]'));
+function lsGet(key, fallback){
+  try{ return JSON.parse(localStorage.getItem(key) || JSON.stringify(fallback)); }
+  catch(e){ return fallback; }
+}
+let visitedGu = new Set(lsGet('sdt_visited', []));
 let stampPrevScreen = 'moodScreen';
-let storedPhotos = JSON.parse(localStorage.getItem('sdt_photos') || '[]');
+let storedPhotos = lsGet('sdt_photos', []);
 
 /* 구 이름을 폴리곤 위치와 무작위로 재조합 */
 function shuffleDistricts(){
@@ -1662,7 +1666,9 @@ function drawDart(x,y,angleDeg,stuck) {
   ctx.shadowColor='rgba(0,0,0,.6)'; ctx.shadowBlur=stuck?16:8;
   ctx.beginPath(); ctx.moveTo(0,-30); ctx.lineTo(3.5,-10); ctx.lineTo(-3.5,-10);
   ctx.closePath(); ctx.fillStyle=stuck?'#ff8844':'#d0d0d0'; ctx.fill();
-  ctx.beginPath(); ctx.roundRect(-4,-10,8,20,2);
+  ctx.beginPath();
+  if(ctx.roundRect) ctx.roundRect(-4,-10,8,20,2);
+  else ctx.rect(-4,-10,8,20);
   ctx.fillStyle='#7a7a7a'; ctx.fill();
   [0,5,10].forEach(dy=>{ctx.beginPath();ctx.rect(-4,-8+dy,8,2.5);ctx.fillStyle='#5a5a5a';ctx.fill();});
   const fc=stuck?'#ff5544':'#4f8ef7';
@@ -2353,7 +2359,9 @@ document.getElementById('hdrStampCount').textContent = visitedGu.size;
 
 /* ── IDLE LOOP ── */
 function idleLoop(){
-  if(state==='idle'||state==='pull') drawCurtain(curtainProg);
+  // 게임 화면이 보일 때만 커튼 애니메이션 실행 (배터리 절약)
+  const gameVisible = !document.getElementById('gameScreen').classList.contains('out');
+  if(gameVisible && (state==='idle'||state==='pull')) drawCurtain(curtainProg);
   requestAnimationFrame(idleLoop);
 }
 idleLoop();
