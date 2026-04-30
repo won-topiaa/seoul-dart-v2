@@ -175,7 +175,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   overflow-y:auto;
 }
 .home-inner{
-  width:100%;max-width:860px;
+  width:100%;max-width:min(1080px,calc(100vw - 32px));
   padding:20px 20px;
   display:flex;flex-direction:column;
   gap:16px;
@@ -187,11 +187,18 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   font-size:11px;font-weight:600;letter-spacing:.6px;
   color:var(--txt3);text-transform:uppercase;margin-bottom:10px;
 }
+.home-brand-row{
+  display:flex;align-items:flex-end;gap:16px;
+}
 .home-brand-title{
   font-size:52px;font-weight:900;line-height:.88;
-  letter-spacing:-3.5px;color:var(--txt);
+  letter-spacing:-3.5px;color:var(--txt);flex-shrink:0;
 }
 .home-brand-title .hl{ color:var(--gold); }
+.home-brand-sub{
+  font-size:12px;color:var(--txt3);font-weight:500;
+  padding-bottom:7px;line-height:1.4;
+}
 
 /* ── CARDS ROW ── */
 .mode-cards-row{
@@ -200,20 +207,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .mode-cards-row .mode-card{
   flex:1;min-width:0;
   aspect-ratio:1;
-  padding:28px 24px;gap:0;
+  padding:32px 28px;gap:0;
   display:flex;flex-direction:column;
   justify-content:space-between;
 }
-.mode-cards-row .mode-card-icon{ font-size:34px; }
-.mode-cards-row .mode-card-title{ font-size:22px;margin-bottom:8px; }
-.mode-cards-row .mode-card-desc{ font-size:14px;line-height:1.7; }
-.mode-cards-row .mode-card-features{ gap:10px;padding:16px 0 0; }
-.mode-cards-row .mode-card-features li{ font-size:13px; }
-.mode-cards-row .btn-mode{ padding:16px 18px;font-size:15px;margin-top:0; }
-.card-tagline{
-  font-size:10px;color:var(--txt3);
-  letter-spacing:.2px;text-align:center;padding-top:6px;
-}
+.mode-cards-row .mode-card-icon{ font-size:38px; }
+.mode-cards-row .mode-card-title{ font-size:26px;margin-bottom:10px; }
+.mode-cards-row .mode-card-desc{ font-size:15px;line-height:1.7; }
+.mode-cards-row .mode-card-features{ gap:12px;padding:20px 0 0; }
+.mode-cards-row .mode-card-features li{ font-size:14px; }
+.mode-cards-row .btn-mode{ padding:18px 20px;font-size:16px;margin-top:0; }
 @media(max-width:480px){
   .mode-cards-row .mode-card{ aspect-ratio:auto; }
 }
@@ -346,7 +349,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 
     <div class="home-brand">
       <p class="home-brand-kicker">서울 행선지 결정 앱</p>
-      <h1 class="home-brand-title">서울<span class="hl">다트.</span></h1>
+      <div class="home-brand-row">
+        <h1 class="home-brand-title">서울<span class="hl">다트.</span></h1>
+        <p class="home-brand-sub">P형 인간<br>우유부단 탈출 프로젝트</p>
+      </div>
     </div>
 
     <div class="mode-cards-row">
@@ -369,7 +375,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         <button class="btn-mode btn-dart" onclick="startGame('dart')">
           다트 던지러 가기 <span class="arr">→</span>
         </button>
-        <p class="card-tagline">P형 인간 우유부단 탈출 프로젝트</p>
       </div>
 
       <!-- 카드 2 : 소상공인 살리기 -->
