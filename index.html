@@ -1735,10 +1735,6 @@ function showResult(){
     // 다트 모드 — 카카오 장소 검색 + 방문 인증 섹션
     document.getElementById('aiOut').style.display='block';
     document.getElementById('localOut').style.display='none';
-    document.getElementById('resRange').textContent='역 반경 800m 주변 장소';
-    document.getElementById('aiLoading').style.display='block';
-    document.getElementById('aiLoading').innerHTML='<div class="ai-spinner"></div><div class="loading-txt">주변 장소를 불러오는 중...</div>';
-    document.getElementById('resGrid').style.display='none';
     document.getElementById('certSection').style.display='flex';
     fetchRecs();
   }
@@ -1747,6 +1743,12 @@ function showResult(){
 /* ── KAKAO LOCAL API ── */
 async function fetchRecs(radius=800){
   document.getElementById('resRange').textContent=`역 반경 ${radius>=1000?(radius/1000).toFixed(1)+'km':radius+'m'} 주변 장소`;
+  // 재시도 포함 항상 스피너 표시
+  const loadEl = document.getElementById('aiLoading');
+  loadEl.style.display='block';
+  loadEl.innerHTML='<div class="ai-spinner"></div><div class="loading-txt">주변 장소를 불러오는 중...</div>';
+  document.getElementById('resGrid').style.display='none';
+  document.getElementById('courseSection').style.display='none';
   const {lat,lng}=hitLatLng;
   const headers={'Authorization':`KakaoAK ${kakaoKey}`};
   const base='https://dapi.kakao.com/v2/local/search/category.json';
@@ -1889,6 +1891,7 @@ let certPhotoDataUrl = null;
 
 function resetCertSection(){
   certPhotoDataUrl = null;
+  window._shareDataUrl = null;
   const fi = document.getElementById('certFileInput');
   if(fi) fi.value='';
   document.getElementById('certPreview').style.display='none';
@@ -1949,6 +1952,12 @@ function generateShareImage(){
   const ctx = canvas.getContext('2d');
 
   const photo = new Image();
+  photo.onerror = () => {
+    // 사진 로드 실패 — 어두운 배경으로 대체
+    ctx.fillStyle = '#0c0f1c';
+    ctx.fillRect(0, 0, SIZE, SIZE);
+    finishShareCanvas(ctx, SIZE);
+  };
   photo.onload = () => {
     // 1. 사진 커버 필
     const s = Math.max(SIZE/photo.width, SIZE/photo.height);
@@ -1964,52 +1973,57 @@ function generateShareImage(){
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, SIZE, SIZE);
 
-    // 3. 상단 로고
-    ctx.font = '700 32px -apple-system, sans-serif';
-    ctx.fillStyle = 'rgba(255,255,255,.55)';
-    ctx.textAlign = 'left';
-    ctx.fillText('서울다트.', 54, 64);
-
-    // 4. 구 이름 (크게)
-    const guName = hitDist?.n || '';
-    ctx.font = '900 108px -apple-system, sans-serif';
-    ctx.fillStyle = '#f5a623';
-    ctx.textAlign = 'left';
-    ctx.fillText(guName, 54, SIZE - 240);
-
-    // 5. 역 이름
-    const stName = hitStation ? `🚇 ${hitStation.n}역` : '';
-    ctx.font = '700 46px -apple-system, sans-serif';
-    ctx.fillStyle = 'rgba(255,255,255,.9)';
-    ctx.fillText(stName, 54, SIZE - 168);
-
-    // 6. 기분 + 날짜
-    const moodStr = selectedMood ? `${selectedMood.emoji} ${selectedMood.label}` : '';
-    const dateStr = new Date().toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric'});
-    ctx.font = '500 34px -apple-system, sans-serif';
-    ctx.fillStyle = 'rgba(255,255,255,.55)';
-    ctx.fillText(`${moodStr}   ${dateStr}`, 54, SIZE - 100);
-
-    // 7. URL
-    ctx.font = '500 26px -apple-system, sans-serif';
-    ctx.fillStyle = 'rgba(255,255,255,.3)';
-    ctx.textAlign = 'right';
-    ctx.fillText('won-topiaa.github.io/seoul-dart-v2', SIZE-54, SIZE-50);
-
-    // 결과 표시
-    const dataUrl = canvas.toDataURL('image/jpeg', 0.93);
-    document.getElementById('shareImg').src = dataUrl;
-    document.getElementById('shareSection').style.display='block';
-    // 네이티브 공유 버튼 (모바일 — 파일 공유 가능 여부까지 검사)
-    try{
-      const testFile = new File([''],'test.jpg',{type:'image/jpeg'});
-      if(navigator.share && navigator.canShare && navigator.canShare({files:[testFile]})){
-        document.getElementById('btnShareNative').style.display='flex';
-      }
-    }catch(e){}
-    window._shareDataUrl = dataUrl;
+    finishShareCanvas(ctx, SIZE);
   };
   photo.src = certPhotoDataUrl;
+}
+
+function finishShareCanvas(ctx, SIZE){
+  const canvas = ctx.canvas;
+  // 3. 상단 로고
+  ctx.font = '700 32px -apple-system, sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,.55)';
+  ctx.textAlign = 'left';
+  ctx.fillText('서울다트.', 54, 64);
+
+  // 4. 구 이름 (크게)
+  const guName = hitDist?.n || '';
+  ctx.font = '900 108px -apple-system, sans-serif';
+  ctx.fillStyle = '#f5a623';
+  ctx.textAlign = 'left';
+  ctx.fillText(guName, 54, SIZE - 240);
+
+  // 5. 역 이름
+  const stName = hitStation ? `🚇 ${hitStation.n}역` : '';
+  ctx.font = '700 46px -apple-system, sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,.9)';
+  ctx.fillText(stName, 54, SIZE - 168);
+
+  // 6. 기분 + 날짜
+  const moodStr = selectedMood ? `${selectedMood.emoji} ${selectedMood.label}` : '';
+  const dateStr = new Date().toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric'});
+  ctx.font = '500 34px -apple-system, sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,.55)';
+  ctx.fillText(`${moodStr}   ${dateStr}`, 54, SIZE - 100);
+
+  // 7. URL
+  ctx.font = '500 26px -apple-system, sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,.3)';
+  ctx.textAlign = 'right';
+  ctx.fillText('won-topiaa.github.io/seoul-dart-v2', SIZE-54, SIZE-50);
+
+  // 결과 표시
+  const dataUrl = canvas.toDataURL('image/jpeg', 0.93);
+  document.getElementById('shareImg').src = dataUrl;
+  document.getElementById('shareSection').style.display='block';
+  // 네이티브 공유 버튼 (모바일 — 파일 공유 가능 여부까지 검사)
+  try{
+    const testFile = new File([''],'test.jpg',{type:'image/jpeg'});
+    if(navigator.share && navigator.canShare && navigator.canShare({files:[testFile]})){
+      document.getElementById('btnShareNative').style.display='flex';
+    }
+  }catch(e){}
+  window._shareDataUrl = dataUrl;
 }
 
 function downloadShareImg(){
@@ -2047,6 +2061,7 @@ function resizeForStorage(dataUrl, maxPx, quality){
       c.getContext('2d').drawImage(img, 0, 0, w, h);
       resolve(c.toDataURL('image/jpeg', quality));
     };
+    img.onerror = () => resolve(dataUrl); // 리사이즈 실패 시 원본 그대로
     img.src = dataUrl;
   });
 }
@@ -2151,13 +2166,21 @@ function renderMoodGrid(){
     </div>`).join('');
 }
 
+function korParticle(word){
+  // 받침 없거나 ㄹ 받침이면 '로', 그 외 받침은 '으로'
+  const code = word.charCodeAt(word.length - 1);
+  if(code < 0xAC00 || code > 0xD7A3) return '로';
+  const j = (code - 0xAC00) % 28;
+  return (j === 0 || j === 8) ? '로' : '으로';
+}
+
 function selectMood(id){
   selectedMood=MOODS.find(m=>m.id===id);
   document.querySelectorAll('.mood-chip').forEach(c=>{
     c.classList.toggle('selected',c.dataset.id===id);
   });
   const btn=document.getElementById('moodNextBtn');
-  btn.innerHTML=`${selectedMood.emoji} ${selectedMood.label}으로 출발 →`;
+  btn.innerHTML=`${selectedMood.emoji} ${selectedMood.label}${korParticle(selectedMood.label)} 출발 →`;
   btn.classList.add('ready');
 }
 
