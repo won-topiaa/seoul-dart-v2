@@ -649,6 +649,48 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   margin-top:3px;opacity:.55;
 }
 .stamp-card.visited .stamp-card-full{ opacity:.8; }
+.stamp-card.visited{ cursor:pointer; }
+.stamp-card.visited:hover{ border-color:rgba(245,166,35,.7);transform:scale(1.03);transition:transform .12s; }
+
+/* ── PHOTO GALLERY VIEW ── */
+.stamp-photo-view{ display:none;flex-direction:column;gap:16px; }
+.photo-view-topbar{
+  display:flex;align-items:center;gap:12px;
+}
+.photo-view-back{
+  background:none;border:none;color:var(--txt2);
+  font-size:13px;font-weight:700;cursor:pointer;
+  font-family:inherit;padding:4px 0;transition:color .12s;flex-shrink:0;
+}
+.photo-view-back:hover{ color:var(--txt); }
+.photo-view-title{
+  font-size:20px;font-weight:900;letter-spacing:-.5px;color:var(--txt);
+}
+.photo-view-count{
+  font-size:12px;color:var(--txt3);font-weight:500;margin-top:2px;
+}
+.photo-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+  gap:10px;
+}
+.photo-card{
+  border-radius:var(--r12);overflow:hidden;
+  background:var(--bg2);border:1px solid var(--border);
+}
+.photo-card img{
+  width:100%;aspect-ratio:1;
+  object-fit:cover;display:block;
+}
+.photo-card-info{ padding:9px 11px; }
+.photo-card-date{ font-size:10px;color:var(--txt3);margin-bottom:3px; }
+.photo-card-station{ font-size:12px;font-weight:700;color:var(--txt); }
+.photo-card-mood{ font-size:11px;color:var(--txt2);margin-top:2px; }
+.photo-empty{
+  text-align:center;padding:48px 20px;
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:var(--r16);color:var(--txt3);font-size:13px;
+}
 </style>
 </head>
 <body>
@@ -671,7 +713,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <button class="stamp-back" onclick="closeStamp()">← 뒤로</button>
       <div class="stamp-prog-txt"><span id="stampDone">0</span> / 25 구 방문</div>
     </div>
-    <div class="stamp-hd">
+    <div class="stamp-hd" id="stampHd">
       <h2 class="stamp-title">서울 25구<br>스탬프</h2>
       <div class="stamp-bar-row">
         <div class="stamp-bar"><div class="stamp-bar-fill" id="stampBarFill" style="width:0%"></div></div>
@@ -683,6 +725,18 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <div class="stamp-complete-sub">진짜 서울러네요 — 모든 구를 정복했습니다</div>
     </div>
     <div class="stamp-grid" id="stampGrid"></div>
+
+    <!-- 사진 갤러리 뷰 (카드 클릭 시 표시) -->
+    <div class="stamp-photo-view" id="stampPhotoView">
+      <div class="photo-view-topbar">
+        <button class="photo-view-back" onclick="closePhotoView()">← 목록으로</button>
+        <div>
+          <div class="photo-view-title" id="photoViewTitle"></div>
+          <div class="photo-view-count" id="photoViewCount"></div>
+        </div>
+      </div>
+      <div class="photo-grid" id="photoGrid"></div>
+    </div>
   </div>
 </div>
 
@@ -1319,6 +1373,7 @@ let selectedMood = null;
 /* ── STAMP STATE ── */
 let visitedGu = new Set(JSON.parse(localStorage.getItem('sdt_visited') || '[]'));
 let stampPrevScreen = 'moodScreen';
+let storedPhotos = JSON.parse(localStorage.getItem('sdt_photos') || '[]');
 
 /* 구 이름을 폴리곤 위치와 무작위로 재조합 */
 function shuffleDistricts(){
@@ -1865,8 +1920,13 @@ function removeCertPhoto(){
   document.getElementById('btnCertConfirm').style.display='none';
 }
 
-function confirmVisit(){
+async function confirmVisit(){
   if(!certPhotoDataUrl || !hitDist) return;
+  // 버튼 비활성화 (중복 클릭 방지)
+  document.getElementById('btnCertConfirm').disabled = true;
+  // 사진 리사이즈 후 저장
+  const thumb = await resizeForStorage(certPhotoDataUrl, 600, 0.78);
+  savePhotoRecord(hitDist.n, thumb);
   // 스탬프 기록
   const isNew = markVisited(hitDist.n);
   // 완료 UI
@@ -1974,6 +2034,77 @@ async function nativeShare(){
   }catch(e){ console.log('share cancelled'); }
 }
 
+/* ── 사진 저장 & 갤러리 ── */
+function resizeForStorage(dataUrl, maxPx, quality){
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => {
+      const scale = Math.min(maxPx / img.width, maxPx / img.height, 1);
+      const w = Math.round(img.width * scale);
+      const h = Math.round(img.height * scale);
+      const c = document.createElement('canvas');
+      c.width = w; c.height = h;
+      c.getContext('2d').drawImage(img, 0, 0, w, h);
+      resolve(c.toDataURL('image/jpeg', quality));
+    };
+    img.src = dataUrl;
+  });
+}
+
+function savePhotoRecord(guName, thumbDataUrl){
+  const record = {
+    gu:      guName,
+    photo:   thumbDataUrl,
+    station: hitStation?.n || null,
+    mood:    selectedMood ? `${selectedMood.emoji} ${selectedMood.label}` : null,
+    date:    new Date().toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric'}),
+  };
+  storedPhotos.push(record);
+  try {
+    localStorage.setItem('sdt_photos', JSON.stringify(storedPhotos));
+  } catch(e) {
+    // 저장 용량 초과 시 가장 오래된 사진부터 제거 후 재시도
+    storedPhotos.shift();
+    try { localStorage.setItem('sdt_photos', JSON.stringify(storedPhotos)); } catch(_){}
+  }
+}
+
+function openPhotoView(guName){
+  const photos = storedPhotos.filter(p => p.gu === guName);
+  document.getElementById('photoViewTitle').textContent = guName;
+  document.getElementById('photoViewCount').textContent =
+    photos.length > 0 ? `사진 ${photos.length}장` : '사진 없음';
+
+  const grid = document.getElementById('photoGrid');
+  if(photos.length === 0){
+    grid.innerHTML = '<div class="photo-empty">아직 저장된 사진이 없어요<br>방문 인증 시 자동으로 저장됩니다</div>';
+  } else {
+    grid.innerHTML = [...photos].reverse().map(p => `
+      <div class="photo-card">
+        <img src="${p.photo}" alt="${p.gu} 방문 사진" loading="lazy">
+        <div class="photo-card-info">
+          <div class="photo-card-date">${p.date}</div>
+          <div class="photo-card-station">${p.station ? '🚇 ' + p.station + '역' : p.gu}</div>
+          ${p.mood ? `<div class="photo-card-mood">${p.mood}</div>` : ''}
+        </div>
+      </div>`).join('');
+  }
+  // 그리드 뷰 숨기고 갤러리 뷰 표시
+  document.getElementById('stampComplete').style.display = 'none';
+  document.getElementById('stampGrid').style.display = 'none';
+  document.getElementById('stampHd').style.display = 'none';
+  document.getElementById('stampPhotoView').style.display = 'flex';
+}
+
+function closePhotoView(){
+  document.getElementById('stampPhotoView').style.display = 'none';
+  document.getElementById('stampGrid').style.display = 'grid';
+  document.getElementById('stampHd').style.display = 'flex';
+  // 완주 배너는 조건에 맞을 때만
+  document.getElementById('stampComplete').style.display =
+    visitedGu.size === 25 ? 'block' : 'none';
+}
+
 function renderStampGrid(){
   const done = visitedGu.size;
   document.getElementById('stampDone').textContent = done;
@@ -1987,7 +2118,7 @@ function renderStampGrid(){
   grid.innerHTML = D.map(d => {
     const v = visitedGu.has(d.n);
     const short = d.n.replace(/구$/, '');
-    return `<div class="stamp-card${v?' visited':''}">
+    return `<div class="stamp-card${v?' visited':''}"${v?` onclick="openPhotoView('${d.n}')"`:''}>
       ${v?'<span class="stamp-mark">✓</span>':''}
       <span class="stamp-card-short">${short}</span>
       <span class="stamp-card-full">${d.n}</span>
