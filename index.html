@@ -554,7 +554,7 @@ const STATIONS_RAW = [
   {n:'회기',          gu:'동대문구', lat:37.5889, lng:127.0566},
   {n:'청량리',        gu:'동대문구', lat:37.5802, lng:127.0457},
   {n:'제기동',        gu:'동대문구', lat:37.5808, lng:127.0381},
-  {n:'장한평',        gu:'동대문구', lat:37.5670, lng:127.0600},
+  {n:'장한평',        gu:'성동구', lat:37.5670, lng:127.0600},
   {n:'답십리',        gu:'동대문구', lat:37.5671, lng:127.0465},
   {n:'용두',          gu:'동대문구', lat:37.5741, lng:127.0323},
   {n:'신설동',        gu:'동대문구', lat:37.5712, lng:127.0196},
@@ -784,11 +784,6 @@ function drawCurtain(prog) {
   ctx.restore();
   if(prog>0.02){
     const t=Date.now()*0.004;
-    ctx.beginPath(); ctx.moveTo(0,covH);
-    for(let x=0;x<=W;x+=8){
-      const wave=Math.sin(x*.055+t)*7+Math.sin(x*.022+t*.6)*5;
-      ctx.lineTo(x,covH+wave);
-    }
     ctx.beginPath();
     for(let x=0;x<=W;x+=6){
       const wave=Math.sin(x*.055+t)*7+Math.sin(x*.022+t*.6)*5;
@@ -914,7 +909,6 @@ function onDown(e){
   const {x,y}=getXY(e);
   if(Math.hypot(x-DART_HOME.x,y-DART_HOME.y)>70) return;
   state='pull'; pulling=true; pxC=x; pyC=y;
-  document.getElementById('guideTxt').style.opacity='0';
 }
 function onMove(e){
   if(state!=='pull') return;
@@ -940,7 +934,6 @@ function onLeave(){if(state==='pull') cancelPull();}
 function cancelPull(){
   state='idle'; pulling=false;
   drawDart(DART_HOME.x,DART_HOME.y,-90,false); drawCurtain(curtainProg);
-  document.getElementById('guideTxt').style.opacity='1';
 }
 
 /* ── FLIGHT ── */
@@ -1091,7 +1084,6 @@ function resetGame(){
   buildMap(); drawCurtain(0); drawDart(DART_HOME.x,DART_HOME.y,-90,false);
   document.getElementById('resultScreen').classList.add('out');
   document.getElementById('gameScreen').classList.remove('out');
-  document.getElementById('guideTxt').style.opacity='1';
 }
 
 /* ── MODAL (비상용) ── */
