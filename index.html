@@ -248,7 +248,7 @@ a,button,label,[role="button"]{-webkit-tap-highlight-color:transparent;touch-act
 @media(max-width:480px){
 
   /* ─ 헤더 ─ */
-  .hdr{ padding:8px max(14px,env(safe-area-inset-left)) 8px max(14px,env(safe-area-inset-left)); }
+  .hdr{ padding:max(8px,env(safe-area-inset-top)) max(14px,env(safe-area-inset-right)) 8px max(14px,env(safe-area-inset-left)); }
   .hdr-tag{ display:none; }          /* 태그라인 숨김 — 공간 절약 */
   .hdr-name{ font-size:13px; }
   .hdr-stamp-btn{ font-size:11px;padding:5px 10px;gap:4px; }
@@ -452,6 +452,47 @@ a,button,label,[role="button"]{-webkit-tap-highlight-color:transparent;touch-act
   gap:20px;
 }
 .mood-hd{ padding:0 2px 4px; }
+
+/* ── 이어서 하기 배너 (24h 세션) ── */
+.resume-banner{
+  display:flex;align-items:center;gap:12px;
+  padding:14px 14px 14px 16px;
+  background:linear-gradient(135deg, rgba(245,166,35,.15), rgba(245,166,35,.06));
+  border:1px solid rgba(245,166,35,.4);
+  border-radius:var(--r16);
+  cursor:pointer;font-family:inherit;
+  transition:all .15s;width:100%;text-align:left;
+  position:relative;
+}
+.resume-banner:hover{ border-color:var(--gold);transform:translateY(-1px);box-shadow:0 4px 16px rgba(245,166,35,.18); }
+.resume-banner:active{ transform:translateY(0); }
+.resume-banner-icon{
+  width:44px;height:44px;flex-shrink:0;
+  background:linear-gradient(135deg,#f5a623,#ff9f43);
+  border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;
+  box-shadow:0 4px 14px rgba(245,166,35,.35);
+}
+.resume-banner-text{ flex:1;min-width:0;display:flex;flex-direction:column;gap:3px; }
+.resume-banner-title{
+  font-size:15px;font-weight:800;color:var(--txt);
+  letter-spacing:-.3px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.resume-banner-sub{
+  font-size:11px;color:var(--txt2);font-weight:500;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.resume-banner-close{
+  width:30px;height:30px;flex-shrink:0;
+  background:transparent;border:none;cursor:pointer;
+  color:var(--txt3);font-size:16px;font-family:inherit;
+  border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .15s;
+}
+.resume-banner-close:hover{ background:rgba(255,255,255,.06);color:var(--txt); }
 .mood-kicker{
   font-size:11px;font-weight:600;letter-spacing:.6px;
   color:var(--txt3);text-transform:uppercase;margin-bottom:10px;
@@ -829,6 +870,14 @@ a,button,label,[role="button"]{-webkit-tap-highlight-color:transparent;touch-act
 <!-- MOOD SCREEN (첫 화면) -->
 <div class="screen" id="moodScreen">
   <div class="mood-inner">
+    <button type="button" class="resume-banner" id="resumeBanner" style="display:none" onclick="resumeSession()">
+      <span class="resume-banner-icon" aria-hidden="true">🎯</span>
+      <span class="resume-banner-text">
+        <span class="resume-banner-title" id="resumeBannerTitle"></span>
+        <span class="resume-banner-sub" id="resumeBannerSub"></span>
+      </span>
+      <span class="resume-banner-close" role="button" aria-label="이어서 하기 닫기" onclick="dismissResumeBanner(event)">✕</span>
+    </button>
     <div class="mood-hd">
       <p class="mood-kicker">오늘의 나는?</p>
       <h2 class="mood-title">기분을 골라봐</h2>
@@ -1461,6 +1510,170 @@ function lsGet(key, fallback){
   try{ return JSON.parse(localStorage.getItem(key) || JSON.stringify(fallback)); }
   catch(e){ return fallback; }
 }
+
+/* HTML 이스케이프 — 카카오 API · 사용자 저장 데이터의 XSS 차단 */
+function escHtml(str){
+  if(str==null) return '';
+  return String(str)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+/* http/https URL만 허용 — javascript:, data: 등 차단 */
+function safeUrl(url){
+  if(!url) return '#';
+  const s = String(url).trim();
+  return /^https?:\/\//i.test(s) ? escHtml(s) : '#';
+}
+
+/* 다음 지도 회전값 — 직전 값 제외하고 셋 중 무작위 (반복 회피) */
+function pickNextRot(){
+  const opts = [0,90,180,270].filter(r => r !== mapRot);
+  return opts[Math.floor(Math.random()*opts.length)];
+}
+
+/* ── 세션 이어하기 (다트 결과 24시간 유지) ──
+   사용자가 결과 화면에서 사진 찍으러 갔다 돌아오거나, 실수로 앱을 닫아도
+   24시간 안에는 첫 화면에서 "이어서 하기" 배너로 즉시 복원 가능. */
+const SDT_SESSION_KEY = 'sdt_session';
+const SDT_SESSION_TTL = 24*60*60*1000; // 24시간
+
+function saveSession(){
+  if(!hitDist || !hitLatLng) return;
+  const data = {
+    ts: Date.now(),
+    guName: hitDist.n,
+    stationName: hitStation?.n || null,
+    stationLat: hitLatLng.lat,
+    stationLng: hitLatLng.lng,
+    moodId: selectedMood?.id || null,
+    gameMode: gameMode || 'dart',
+  };
+  try { localStorage.setItem(SDT_SESSION_KEY, JSON.stringify(data)); } catch(e){}
+}
+function loadSession(){
+  const s = lsGet(SDT_SESSION_KEY, null);
+  if(!s || !s.ts || !s.guName) return null;
+  if(Date.now() - s.ts > SDT_SESSION_TTL){ clearSession(); return null; }
+  return s;
+}
+function clearSession(){
+  try { localStorage.removeItem(SDT_SESSION_KEY); } catch(e){}
+}
+function fmtElapsed(ms){
+  const m = Math.floor(ms/60000);
+  if(m < 1) return '방금 전';
+  if(m < 60) return `${m}분 전`;
+  const h = Math.floor(m/60);
+  if(h < 24) return `${h}시간 전`;
+  return '하루 전';
+}
+function renderResumeBanner(){
+  const banner = document.getElementById('resumeBanner');
+  if(!banner) return;
+  const s = loadSession();
+  if(!s){ banner.style.display='none'; return; }
+  const moodObj = s.moodId ? MOODS.find(m => m.id === s.moodId) : null;
+  const moodPrefix = moodObj ? `${moodObj.emoji} ` : '';
+  document.getElementById('resumeBannerTitle').textContent =
+    `${moodPrefix}${s.guName} 이어서 하기`;
+  document.getElementById('resumeBannerSub').textContent =
+    `${fmtElapsed(Date.now()-s.ts)}에 뽑은 결과 · 24시간 동안 유지`;
+  banner.style.display = 'flex';
+}
+function dismissResumeBanner(event){
+  if(event){ event.stopPropagation(); event.preventDefault(); }
+  clearSession();
+  const b = document.getElementById('resumeBanner');
+  if(b) b.style.display='none';
+}
+function resumeSession(){
+  const s = loadSession();
+  if(!s) return;
+  // 상태 복원 — hitDist는 .n만 사용되므로 최소 객체로 충분
+  hitDist = { n: s.guName };
+  hitStation = s.stationName
+    ? { n: s.stationName, lat: s.stationLat, lng: s.stationLng }
+    : null;
+  hitLatLng = { lat: s.stationLat, lng: s.stationLng };
+  selectedMood = s.moodId ? (MOODS.find(m => m.id === s.moodId) || null) : null;
+  gameMode = s.gameMode || 'dart';
+  // 메인 화면 토글 — moodScreen에서 직접 결과로 점프
+  document.getElementById('moodScreen').classList.add('out');
+  document.getElementById('homeScreen').classList.add('out');
+  document.getElementById('gameScreen').classList.add('out');
+  showResult();
+}
+
+/* ── 브라우저 뒤로가기 지원 ──
+   각 화면 전환 시 history.pushState로 entry를 쌓고, popstate에서 화면 복원.
+   _isPopstate 플래그로 popstate가 트리거한 전환에서는 다시 push하지 않음 (무한 루프 방지). */
+let _isPopstate = false;
+function pushScreen(screenId){
+  if(_isPopstate) return;
+  // URL은 변경하지 않고 history entry만 추가 (해시 노이즈 방지)
+  try { history.pushState({screen: screenId}, ''); } catch(e){}
+}
+function goBackTo(target){
+  // 1) 진행 중인 다트 애니메이션 취소
+  if(typeof raf !== 'undefined' && raf){ cancelAnimationFrame(raf); raf = null; }
+
+  // 2) 스탬프 오버레이는 항상 닫기
+  document.getElementById('stampScreen').classList.add('out');
+
+  // 3) target이 stampScreen이면 스탬프만 닫고 메인 화면은 그대로
+  if(target === 'stampScreen') return;
+
+  const screens = ['moodScreen','homeScreen','gameScreen','resultScreen'];
+  if(!screens.includes(target)) target = 'moodScreen'; // 알 수 없는 target → 시작 화면
+
+  const wasOnResult = !document.getElementById('resultScreen').classList.contains('out');
+
+  // 4) 메인 화면 토글
+  screens.forEach(id => {
+    document.getElementById(id).classList.toggle('out', id !== target);
+  });
+
+  // 5) 결과에서 떠날 때 인증/공유 영역 정리
+  if(wasOnResult && target !== 'resultScreen'){
+    if(typeof resetCertSection === 'function') resetCertSection();
+    const ss = document.getElementById('shareSection');
+    if(ss) ss.style.display='none';
+  }
+
+  // 6) moodScreen으로 돌아갈 때 기분 선택 초기화 + 이어하기 배너 갱신
+  if(target === 'moodScreen'){
+    selectedMood = null;
+    document.querySelectorAll('.mood-chip').forEach(c=>c.classList.remove('selected'));
+    const btn = document.getElementById('moodNextBtn');
+    if(btn){ btn.innerHTML='출발 →'; btn.classList.remove('ready'); }
+    if(typeof renderResumeBanner === 'function') renderResumeBanner();
+  }
+
+  // 7) gameScreen으로: 결과에서 왔으면 새 라운드 준비, 아니면 진행 중 상태만 정리
+  if(target === 'gameScreen'){
+    if(wasOnResult){
+      hitDist = hitStation = hitLatLng = null;
+      mapRot = pickNextRot();
+      shuffleDistricts();
+      buildMap(); drawCurtain(0); drawDart(DART_HOME.x, DART_HOME.y, -90, false);
+      curtainProg=0;
+    } else if(state==='pull' || state==='fly' || state==='reveal'){
+      drawDart(DART_HOME.x, DART_HOME.y, -90, false); drawCurtain(curtainProg);
+    }
+    state='idle'; pulling=false;
+  }
+}
+window.addEventListener('popstate', (e) => {
+  _isPopstate = true;
+  try {
+    const target = (e.state && e.state.screen) || 'moodScreen';
+    goBackTo(target);
+  } finally {
+    _isPopstate = false;
+  }
+});
+// 초기 상태 등록 — moodScreen이 첫 화면
+try { history.replaceState({screen: 'moodScreen'}, ''); } catch(e){}
 let visitedGu = new Set(lsGet('sdt_visited', []));
 let stampPrevScreen = 'moodScreen';
 let storedPhotos = lsGet('sdt_photos', []);
@@ -1531,6 +1744,8 @@ function applyArenaSize() {
   dc.addEventListener('touchstart', e=>{e.preventDefault();onDown(e.touches[0]);},{passive:false});
   dc.addEventListener('touchmove',  e=>{e.preventDefault();onMove(e.touches[0]);},{passive:false});
   dc.addEventListener('touchend',   e=>{e.preventDefault();onUp(e.changedTouches[0]);},{passive:false});
+  // iOS 알림 · 시스템 제스처로 터치가 중단되면 touchcancel만 발생 → pull 상태 고정 방지
+  dc.addEventListener('touchcancel',e=>{e.preventDefault();if(state==='pull')cancelPull();},{passive:false});
 })();
 
 function buildMap() {
@@ -1799,6 +2014,7 @@ function startReveal(){
 
 /* ── RESULT ── */
 function showResult(){
+  if(!hitDist || !hitLatLng) return; // 상태가 리셋된 경우 방어
   const stName=hitStation?hitStation.n+'역':hitDist.n;
   document.getElementById('resGu').textContent=hitDist.n;
   document.getElementById('resDong').innerHTML=hitStation
@@ -1810,6 +2026,7 @@ function showResult(){
   document.getElementById('mapLink').href=mapUrl;
   document.getElementById('gameScreen').classList.add('out');
   document.getElementById('resultScreen').classList.remove('out');
+  pushScreen('resultScreen');
   // 방어적 초기화 — 이전 결과 잔재 제거
   document.getElementById('courseSection').style.display='none';
   document.getElementById('resMoodWrap').style.display='none';
@@ -1831,10 +2048,13 @@ function showResult(){
     document.getElementById('certSection').style.display='flex';
     fetchRecs();
   }
+  // 24시간 이어하기 세션 저장
+  saveSession();
 }
 
 /* ── KAKAO LOCAL API ── */
 async function fetchRecs(radius=800){
+  if(!hitLatLng) return;  // 결과 화면 밖에서 재시도 버튼 눌렸을 때 방어
   document.getElementById('resRange').textContent=`역 반경 ${radius>=1000?(radius/1000).toFixed(1)+'km':radius+'m'} 주변 장소`;
   // 재시도 포함 항상 스피너 표시
   const loadEl = document.getElementById('aiLoading');
@@ -1862,7 +2082,7 @@ async function fetchRecs(radius=800){
     renderRecs({attractions, restaurants, cafes});
   }catch(err){
     document.getElementById('aiLoading').innerHTML=
-      `<div style="color:var(--red);font-size:13px;padding:20px 0">⚠ 장소 검색 실패: ${err.message}<br><br>
+      `<div style="color:var(--red);font-size:13px;padding:20px 0">⚠ 장소 검색 실패: ${err?.message || String(err)}<br><br>
        <button class="btn-retry" style="font-size:13px;padding:10px 22px" onclick="fetchRecs()">다시 시도</button></div>`;
   }
 }
@@ -1880,10 +2100,10 @@ function renderRecs({attractions,restaurants,cafes}){
   // 기분 미선택 — 기존 그리드
   const fill=(id,items)=>{
     document.getElementById(id).innerHTML=items.length
-      ?items.map(p=>`<li class="place-item"><a href="${p.place_url}" target="_blank" rel="noopener">
-          <div class="place-name">${p.place_name}<span class="place-dist">${fmtDist(p.distance)}</span></div>
-          <div class="place-cat">${shortCat(p.category_name)}</div>
-          <div class="place-addr">${p.road_address_name||p.address_name}</div>
+      ?items.map(p=>`<li class="place-item"><a href="${safeUrl(p.place_url)}" target="_blank" rel="noopener">
+          <div class="place-name">${escHtml(p.place_name)}<span class="place-dist">${escHtml(fmtDist(p.distance))}</span></div>
+          <div class="place-cat">${escHtml(shortCat(p.category_name))}</div>
+          <div class="place-addr">${escHtml(p.road_address_name||p.address_name)}</div>
         </a></li>`).join('')
       :'<li class="place-empty">주변 결과 없음</li>';
   };
@@ -1917,14 +2137,14 @@ function renderCourseCards({attractions,restaurants,cafes}){
     <div class="course-card">
       <div class="course-card-hd">
         <span class="course-num">코스 ${i+1}</span>
-        <span class="course-name">${co.name}</span>
+        <span class="course-name">${escHtml(co.name)}</span>
       </div>
       <div class="course-stops">
         ${co.stops.map((s,j)=>`
           ${j>0?'<span class="course-arrow">→</span>':''}
-          <a class="course-stop" href="${s.p.place_url}" target="_blank" rel="noopener">
-            <span class="course-sname">${s.icon} ${s.p.place_name}</span>
-            <span class="course-smeta">${shortCat(s.p.category_name)} · ${fmtDist(s.p.distance)}</span>
+          <a class="course-stop" href="${safeUrl(s.p.place_url)}" target="_blank" rel="noopener">
+            <span class="course-sname">${s.icon} ${escHtml(s.p.place_name)}</span>
+            <span class="course-smeta">${escHtml(shortCat(s.p.category_name))} · ${escHtml(fmtDist(s.p.distance))}</span>
           </a>`).join('')}
       </div>
     </div>`).join('');
@@ -1959,12 +2179,12 @@ function renderLocalResult(guName){
       bizList.map(b=>`
         <div class="local-biz-card">
           <div class="local-biz-name">
-            ${b.n}
-            <span class="local-biz-cat">${b.cat||''}</span>
+            ${escHtml(b.n)}
+            <span class="local-biz-cat">${escHtml(b.cat||'')}</span>
           </div>
-          ${b.desc?`<div class="local-biz-desc">${b.desc}</div>`:''}
-          ${b.addr?`<div class="local-biz-addr">📍 ${b.addr}</div>`:''}
-          ${b.mapUrl?`<a href="${b.mapUrl}" target="_blank" rel="noopener" style="margin-top:8px;font-size:12px;color:var(--green);font-weight:700;">🗺 지도 보기</a>`:''}
+          ${b.desc?`<div class="local-biz-desc">${escHtml(b.desc)}</div>`:''}
+          ${b.addr?`<div class="local-biz-addr">📍 ${escHtml(b.addr)}</div>`:''}
+          ${b.mapUrl?`<a href="${safeUrl(b.mapUrl)}" target="_blank" rel="noopener" style="margin-top:8px;font-size:12px;color:var(--green);font-weight:700;">🗺 지도 보기</a>`:''}
         </div>`).join('')
     }</div>`;
   }
@@ -1989,7 +2209,9 @@ function resetCertSection(){
   if(fi) fi.value='';
   document.getElementById('certPreview').style.display='none';
   document.getElementById('certBtns').style.display='flex';
-  document.getElementById('btnCertConfirm').style.display='none';
+  const confirmBtn = document.getElementById('btnCertConfirm');
+  confirmBtn.style.display='none';
+  confirmBtn.disabled = false;
   document.getElementById('certDone').style.display='none';
   document.getElementById('shareSection').style.display='none';
 }
@@ -2019,23 +2241,33 @@ function removeCertPhoto(){
 async function confirmVisit(){
   if(!certPhotoDataUrl || !hitDist) return;
   // 버튼 비활성화 (중복 클릭 방지)
-  document.getElementById('btnCertConfirm').disabled = true;
-  // 사진 리사이즈 후 저장
-  const thumb = await resizeForStorage(certPhotoDataUrl, 600, 0.78);
-  savePhotoRecord(hitDist.n, thumb);
-  // 스탬프 기록
-  const isNew = markVisited(hitDist.n);
-  // 완료 UI
-  document.getElementById('certBtns').style.display='none';
-  document.getElementById('certPreview').style.display='none';
-  const doneEl = document.getElementById('certDone');
-  const doneMsg = document.getElementById('certDoneMsg');
-  doneMsg.textContent = isNew
-    ? `✨ ${hitDist.n} 첫 방문! 스탬프 획득 (${visitedGu.size}/25)`
-    : `${hitDist.n} 재방문 인증 완료 (${visitedGu.size}/25)`;
-  doneEl.style.display='flex';
-  // 공유 이미지 생성
-  generateShareImage();
+  const confirmBtn = document.getElementById('btnCertConfirm');
+  confirmBtn.disabled = true;
+  try {
+    // 사진 리사이즈 후 저장
+    const thumb = await resizeForStorage(certPhotoDataUrl, 600, 0.78);
+    savePhotoRecord(hitDist.n, thumb);
+    // 스탬프 기록
+    const isNew = markVisited(hitDist.n);
+    // 완료 UI
+    document.getElementById('certBtns').style.display='none';
+    document.getElementById('certPreview').style.display='none';
+    const doneEl = document.getElementById('certDone');
+    const doneMsg = document.getElementById('certDoneMsg');
+    doneMsg.textContent = isNew
+      ? `✨ ${hitDist.n} 첫 방문! 스탬프 획득 (${visitedGu.size}/25)`
+      : `${hitDist.n} 재방문 인증 완료 (${visitedGu.size}/25)`;
+    doneEl.style.display='flex';
+    // 공유 이미지 생성
+    generateShareImage();
+    // 방문 인증 완료 → 이어하기 세션 종료 (이번 픽은 "사용됨")
+    clearSession();
+  } catch(err) {
+    // 인증 처리 중 오류 발생 시 버튼 다시 활성화 (사용자가 재시도 가능)
+    confirmBtn.disabled = false;
+    alert('인증 처리 중 오류가 발생했어요. 다시 시도해주세요 🙏');
+    console.error('confirmVisit failed:', err);
+  }
 }
 
 function generateShareImage(){
@@ -2044,12 +2276,20 @@ function generateShareImage(){
   canvas.width = SIZE; canvas.height = SIZE;
   const ctx = canvas.getContext('2d');
 
+  // 비동기 사진 로드 중 사용자가 "다시 던지기"로 리셋하면 hitDist/hitStation/selectedMood가 null이 됨
+  // → 시작 시점의 값을 스냅샷으로 캡쳐해 finishShareCanvas에 전달
+  const snapshot = {
+    guName: hitDist?.n || '',
+    stName: hitStation ? `🚇 ${hitStation.n}역` : '',
+    moodStr: selectedMood ? `${selectedMood.emoji} ${selectedMood.label}` : '',
+  };
+
   const photo = new Image();
   photo.onerror = () => {
     // 사진 로드 실패 — 어두운 배경으로 대체
     ctx.fillStyle = '#0c0f1c';
     ctx.fillRect(0, 0, SIZE, SIZE);
-    finishShareCanvas(ctx, SIZE);
+    finishShareCanvas(ctx, SIZE, snapshot);
   };
   photo.onload = () => {
     // 1. 사진 커버 필
@@ -2066,12 +2306,12 @@ function generateShareImage(){
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, SIZE, SIZE);
 
-    finishShareCanvas(ctx, SIZE);
+    finishShareCanvas(ctx, SIZE, snapshot);
   };
   photo.src = certPhotoDataUrl;
 }
 
-function finishShareCanvas(ctx, SIZE){
+function finishShareCanvas(ctx, SIZE, snap){
   const canvas = ctx.canvas;
   // 3. 상단 로고
   ctx.font = '700 32px -apple-system, sans-serif';
@@ -2080,20 +2320,18 @@ function finishShareCanvas(ctx, SIZE){
   ctx.fillText('서울다트.', 54, 64);
 
   // 4. 구 이름 (크게)
-  const guName = hitDist?.n || '';
   ctx.font = '900 108px -apple-system, sans-serif';
   ctx.fillStyle = '#f5a623';
   ctx.textAlign = 'left';
-  ctx.fillText(guName, 54, SIZE - 240);
+  ctx.fillText(snap.guName, 54, SIZE - 240);
 
   // 5. 역 이름
-  const stName = hitStation ? `🚇 ${hitStation.n}역` : '';
   ctx.font = '700 46px -apple-system, sans-serif';
   ctx.fillStyle = 'rgba(255,255,255,.9)';
-  ctx.fillText(stName, 54, SIZE - 168);
+  ctx.fillText(snap.stName, 54, SIZE - 168);
 
   // 6. 기분 + 날짜
-  const moodStr = selectedMood ? `${selectedMood.emoji} ${selectedMood.label}` : '';
+  const moodStr = snap.moodStr;
   const dateStr = new Date().toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric'});
   ctx.font = '500 34px -apple-system, sans-serif';
   ctx.fillStyle = 'rgba(255,255,255,.55)';
@@ -2189,11 +2427,11 @@ function openPhotoView(guName){
   } else {
     grid.innerHTML = [...photos].reverse().map(p => `
       <div class="photo-card">
-        <img src="${p.photo}" alt="${p.gu} 방문 사진" loading="lazy">
+        <img src="${escHtml(p.photo)}" alt="${escHtml(p.gu)} 방문 사진" loading="lazy">
         <div class="photo-card-info">
-          <div class="photo-card-date">${p.date}</div>
-          <div class="photo-card-station">${p.station ? '🚇 ' + p.station + '역' : p.gu}</div>
-          ${p.mood ? `<div class="photo-card-mood">${p.mood}</div>` : ''}
+          <div class="photo-card-date">${escHtml(p.date)}</div>
+          <div class="photo-card-station">${p.station ? '🚇 ' + escHtml(p.station) + '역' : escHtml(p.gu)}</div>
+          ${p.mood ? `<div class="photo-card-mood">${escHtml(p.mood)}</div>` : ''}
         </div>
       </div>`).join('');
   }
@@ -2241,11 +2479,21 @@ function openStamp(){
   document.getElementById(stampPrevScreen).classList.add('out');
   renderStampGrid();
   document.getElementById('stampScreen').classList.remove('out');
+  pushScreen('stampScreen');
 }
 
 function closeStamp(){
+  // 브라우저 history와 동기화 — history.back()이 popstate를 발생시키고
+  // goBackTo가 스탬프 닫기 + 이전 화면 복원을 처리함
+  if(history.state && history.state.screen === 'stampScreen'){
+    history.back();
+    return;
+  }
+  // 폴백: history 상태가 없거나 일치하지 않을 때 직접 처리
   document.getElementById('stampScreen').classList.add('out');
-  document.getElementById(stampPrevScreen).classList.remove('out');
+  const prevEl = document.getElementById(stampPrevScreen);
+  const target = prevEl.classList.contains('out') ? 'resultScreen' : stampPrevScreen;
+  document.getElementById(target).classList.remove('out');
 }
 
 /* ── MOOD SCREEN ── */
@@ -2281,13 +2529,14 @@ function confirmMood(){
   if(!selectedMood) return;
   document.getElementById('moodScreen').classList.add('out');
   document.getElementById('homeScreen').classList.remove('out');
+  pushScreen('homeScreen');
 }
 
 /* ── RESULT → MOOD SCREEN ── */
 function goHome(){
   if(raf) cancelAnimationFrame(raf);
   state='idle';pulling=false;curtainProg=0;hitDist=hitStation=hitLatLng=null;
-  mapRot=[0,90,180,270][Math.floor(Math.random()*4)];
+  mapRot=pickNextRot();
   shuffleDistricts();
   buildMap(); drawCurtain(0); drawDart(DART_HOME.x,DART_HOME.y,-90,false);
   // 결과 패널 초기화
@@ -2309,6 +2558,8 @@ function goHome(){
   document.getElementById('gameScreen').classList.add('out');
   document.getElementById('homeScreen').classList.add('out');
   document.getElementById('moodScreen').classList.remove('out');
+  pushScreen('moodScreen');
+  renderResumeBanner();
 }
 
 /* ── HOME → GAME ── */
@@ -2316,13 +2567,14 @@ function startGame(mode){
   gameMode = mode || 'dart';
   document.getElementById('homeScreen').classList.add('out');
   document.getElementById('gameScreen').classList.remove('out');
+  pushScreen('gameScreen');
 }
 
 /* ── RESET ── */
 function resetGame(){
   if(raf) cancelAnimationFrame(raf);
   state='idle';pulling=false;curtainProg=0;hitDist=hitStation=hitLatLng=null;
-  mapRot=[0,90,180,270][Math.floor(Math.random()*4)];
+  mapRot=pickNextRot();
   shuffleDistricts();
   buildMap(); drawCurtain(0); drawDart(DART_HOME.x,DART_HOME.y,-90,false);
   // 결과 패널 초기화
@@ -2336,6 +2588,7 @@ function resetGame(){
   resetCertSection();
   document.getElementById('resultScreen').classList.add('out');
   document.getElementById('gameScreen').classList.remove('out');
+  pushScreen('gameScreen');
 }
 
 /* ── MODAL (비상용) ── */
@@ -2356,13 +2609,19 @@ function saveKey(){
 /* ── INIT ── */
 renderMoodGrid();
 document.getElementById('hdrStampCount').textContent = visitedGu.size;
+renderResumeBanner(); // 24h 이내 진행 중 세션이 있으면 첫 화면에 "이어서 하기" 배너 표시
 
 /* ── IDLE LOOP ── */
 function idleLoop(){
   // 게임 화면이 보일 때만 커튼 애니메이션 실행 (배터리 절약)
   const gameVisible = !document.getElementById('gameScreen').classList.contains('out');
-  if(gameVisible && (state==='idle'||state==='pull')) drawCurtain(curtainProg);
-  requestAnimationFrame(idleLoop);
+  if(gameVisible && (state==='idle'||state==='pull')){
+    drawCurtain(curtainProg);
+    requestAnimationFrame(idleLoop);
+  } else {
+    // 안 보일 때는 rAF 대신 0.5s setTimeout — 폴링 주기 1/30로 감소
+    setTimeout(idleLoop, 500);
+  }
 }
 idleLoop();
 </script>
