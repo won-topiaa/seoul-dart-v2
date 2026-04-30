@@ -32,6 +32,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   box-shadow:0 2px 12px rgba(245,166,35,.3);}
 .hdr-name{font-size:14px;font-weight:800;letter-spacing:-.3px;}
 .hdr-tag{font-size:10px;color:var(--txt3);margin-top:1px;font-weight:500;}
+.hdr-stamp-btn{
+  margin-left:auto;flex-shrink:0;
+  background:var(--bg3);border:1px solid var(--border2);
+  border-radius:20px;padding:5px 12px;
+  font-size:12px;font-weight:700;color:var(--txt2);
+  cursor:pointer;font-family:inherit;transition:all .15s;
+  display:flex;align-items:center;gap:5px;
+}
+.hdr-stamp-btn:hover{ border-color:var(--gold);color:var(--gold); }
+.hdr-stamp-count{ color:var(--gold);font-weight:900; }
+.hdr-stamp-total{ color:var(--txt3); }
 
 /* ── GAME SCREEN ── */
 #gameScreen{justify-content:center;}
@@ -449,6 +460,105 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .course-sname{ font-size:13px;font-weight:700;color:var(--txt);transition:color .12s; }
 .course-smeta{ font-size:10px;color:var(--txt3); }
 .course-arrow{ font-size:13px;color:var(--txt3);padding:2px 0;flex-shrink:0;margin-top:2px; }
+
+/* ── STAMP TOAST (결과 화면) ── */
+.stamp-toast{
+  display:flex;align-items:center;gap:10px;
+  background:linear-gradient(135deg,rgba(245,166,35,.12),var(--bg2));
+  border:1px solid rgba(245,166,35,.35);
+  border-radius:var(--r12);padding:12px 16px;
+  margin-bottom:14px;
+  font-size:13px;font-weight:700;color:var(--gold);
+  animation:toastIn .4s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes toastIn{from{opacity:0;transform:translateY(-8px);}to{opacity:1;transform:none;}}
+.stamp-toast-ico{ font-size:20px;flex-shrink:0; }
+.stamp-toast-sub{ font-size:11px;color:var(--txt2);font-weight:500;margin-top:2px; }
+
+/* ── STAMP SCREEN ── */
+#stampScreen{
+  justify-content:flex-start;
+  padding:54px 0 32px;
+  align-items:center;
+  overflow-y:auto;
+  z-index:200;
+}
+.stamp-wrap{
+  width:100%;max-width:620px;
+  padding:20px 18px;
+  display:flex;flex-direction:column;gap:16px;
+}
+.stamp-topbar{
+  display:flex;align-items:center;justify-content:space-between;
+}
+.stamp-back{
+  background:none;border:none;color:var(--txt2);
+  font-size:13px;font-weight:700;cursor:pointer;
+  font-family:inherit;padding:4px 0;transition:color .12s;
+}
+.stamp-back:hover{ color:var(--txt); }
+.stamp-prog-txt{
+  font-size:12px;font-weight:700;color:var(--txt3);
+}
+.stamp-prog-txt span{ color:var(--gold);font-size:14px;font-weight:900; }
+.stamp-hd{ display:flex;flex-direction:column;gap:10px; }
+.stamp-title{
+  font-size:32px;font-weight:900;letter-spacing:-1.5px;
+  line-height:1;color:var(--txt);
+}
+.stamp-bar-row{ display:flex;align-items:center;gap:10px; }
+.stamp-bar{
+  flex:1;height:6px;background:var(--bg3);
+  border-radius:10px;overflow:hidden;
+}
+.stamp-bar-fill{
+  height:100%;background:linear-gradient(90deg,#f5a623,#ff7a35);
+  border-radius:10px;transition:width .5s cubic-bezier(.4,0,.2,1);
+}
+.stamp-bar-pct{ font-size:12px;font-weight:700;color:var(--gold);flex-shrink:0; }
+.stamp-complete{
+  background:linear-gradient(135deg,rgba(245,166,35,.15),var(--bg2));
+  border:1px solid rgba(245,166,35,.4);
+  border-radius:var(--r16);padding:18px 20px;
+  text-align:center;font-size:15px;font-weight:800;color:var(--gold);
+  animation:toastIn .4s ease;
+}
+.stamp-complete-sub{
+  font-size:12px;color:var(--txt2);font-weight:500;margin-top:5px;
+}
+/* stamp grid */
+.stamp-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(86px,1fr));
+  gap:8px;
+}
+.stamp-card{
+  background:var(--bg2);
+  border:1.5px solid var(--border);
+  border-radius:var(--r12);
+  padding:14px 6px 11px;
+  text-align:center;position:relative;
+  transition:border-color .2s,background .2s;
+}
+.stamp-card.visited{
+  border-color:rgba(245,166,35,.45);
+  background:linear-gradient(145deg,rgba(245,166,35,.09),var(--bg2));
+}
+.stamp-mark{
+  position:absolute;top:6px;right:8px;
+  font-size:11px;color:var(--gold);font-weight:900;
+}
+.stamp-card-short{
+  display:block;font-size:17px;font-weight:900;
+  letter-spacing:-.5px;
+  color:var(--txt3);
+}
+.stamp-card.visited .stamp-card-short{ color:var(--gold); }
+.stamp-card-full{
+  display:block;font-size:9.5px;color:var(--txt3);
+  margin-top:3px;opacity:.55;
+}
+.stamp-card.visited .stamp-card-full{ opacity:.8; }
 </style>
 </head>
 <body>
@@ -459,7 +569,32 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <div class="hdr-name">서울 다트</div>
     <div class="hdr-tag">오늘 어디 갈까? — P들을 위한 결정 대리인</div>
   </div>
+  <button class="hdr-stamp-btn" onclick="openStamp()">
+    🗂 <span class="hdr-stamp-count" id="hdrStampCount">0</span><span class="hdr-stamp-total">/25</span>
+  </button>
 </header>
+
+<!-- STAMP SCREEN -->
+<div class="screen out" id="stampScreen">
+  <div class="stamp-wrap">
+    <div class="stamp-topbar">
+      <button class="stamp-back" onclick="closeStamp()">← 뒤로</button>
+      <div class="stamp-prog-txt"><span id="stampDone">0</span> / 25 구 방문</div>
+    </div>
+    <div class="stamp-hd">
+      <h2 class="stamp-title">서울 25구<br>스탬프</h2>
+      <div class="stamp-bar-row">
+        <div class="stamp-bar"><div class="stamp-bar-fill" id="stampBarFill" style="width:0%"></div></div>
+        <div class="stamp-bar-pct" id="stampBarPct">0%</div>
+      </div>
+    </div>
+    <div id="stampComplete" class="stamp-complete" style="display:none">
+      🎉 서울 25구 완주!
+      <div class="stamp-complete-sub">진짜 서울러네요 — 모든 구를 정복했습니다</div>
+    </div>
+    <div class="stamp-grid" id="stampGrid"></div>
+  </div>
+</div>
 
 <!-- MOOD SCREEN (첫 화면) -->
 <div class="screen" id="moodScreen">
@@ -559,6 +694,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <div class="res-range" id="resRange">역 반경 800m 주변 장소</div>
       <div id="resMoodWrap" style="display:none"><span class="res-mood-badge" id="resMoodBadge"></span></div>
       <div><a class="map-link" id="mapLink" target="_blank" rel="noopener">🗺 카카오맵에서 보기</a></div>
+    </div>
+
+    <div id="stampToast" style="display:none" class="stamp-toast">
+      <span class="stamp-toast-ico">🗂</span>
+      <div>
+        <div id="stampToastMsg"></div>
+        <div class="stamp-toast-sub">헤더의 스탬프 버튼에서 컬렉션을 확인하세요</div>
+      </div>
     </div>
 
     <div id="aiOut">
@@ -1048,6 +1191,10 @@ const COURSE_NAMES = {
 
 let selectedMood = null;
 
+/* ── STAMP STATE ── */
+let visitedGu = new Set(JSON.parse(localStorage.getItem('sdt_visited') || '[]'));
+let stampPrevScreen = 'moodScreen';
+
 /* 구 이름을 폴리곤 위치와 무작위로 재조합 */
 function shuffleDistricts(){
   const names = D.map(d=>d.n);
@@ -1394,6 +1541,21 @@ function showResult(){
   document.getElementById('courseSection').style.display='none';
   document.getElementById('resMoodWrap').style.display='none';
   document.getElementById('resGrid').style.display='none';
+  document.getElementById('stampToast').style.display='none';
+
+  // 스탬프 기록 (dart 모드 한정)
+  if(gameMode==='dart' && hitDist){
+    const isNew = markVisited(hitDist.n);
+    const toast = document.getElementById('stampToast');
+    const msg   = document.getElementById('stampToastMsg');
+    if(isNew){
+      msg.textContent = `✨ ${hitDist.n} 첫 방문! 스탬프 획득 (${visitedGu.size}/25)`;
+      toast.style.display='flex';
+    } else {
+      msg.textContent = `${hitDist.n} 재방문 — 스탬프 컬렉션 ${visitedGu.size}/25`;
+      toast.style.display='flex';
+    }
+  }
 
   if(gameMode==='local'){
     // 소상공인 모드 — 카카오 API 사용 안 함
@@ -1544,6 +1706,49 @@ function renderLocalResult(guName){
   }
 }
 
+/* ── STAMP ── */
+function markVisited(guName){
+  const isNew = !visitedGu.has(guName);
+  visitedGu.add(guName);
+  localStorage.setItem('sdt_visited', JSON.stringify([...visitedGu]));
+  document.getElementById('hdrStampCount').textContent = visitedGu.size;
+  return isNew;
+}
+
+function renderStampGrid(){
+  const done = visitedGu.size;
+  document.getElementById('stampDone').textContent = done;
+  document.getElementById('hdrStampCount').textContent = done;
+  const pct = Math.round(done / 25 * 100);
+  document.getElementById('stampBarFill').style.width = pct + '%';
+  document.getElementById('stampBarPct').textContent = pct + '%';
+  document.getElementById('stampComplete').style.display = done === 25 ? 'block' : 'none';
+
+  const grid = document.getElementById('stampGrid');
+  grid.innerHTML = D.map(d => {
+    const v = visitedGu.has(d.n);
+    const short = d.n.replace('구','');
+    return `<div class="stamp-card${v?' visited':''}">
+      ${v?'<span class="stamp-mark">✓</span>':''}
+      <span class="stamp-card-short">${short}</span>
+      <span class="stamp-card-full">${d.n}</span>
+    </div>`;
+  }).join('');
+}
+
+function openStamp(){
+  const screens = ['moodScreen','homeScreen','gameScreen','resultScreen'];
+  stampPrevScreen = screens.find(id => !document.getElementById(id).classList.contains('out')) || 'moodScreen';
+  document.getElementById(stampPrevScreen).classList.add('out');
+  renderStampGrid();
+  document.getElementById('stampScreen').classList.remove('out');
+}
+
+function closeStamp(){
+  document.getElementById('stampScreen').classList.add('out');
+  document.getElementById(stampPrevScreen).classList.remove('out');
+}
+
 /* ── MOOD SCREEN ── */
 function renderMoodGrid(){
   const grid=document.getElementById('moodGrid');
@@ -1637,6 +1842,7 @@ function saveKey(){
 
 /* ── INIT ── */
 renderMoodGrid();
+document.getElementById('hdrStampCount').textContent = visitedGu.size;
 
 /* ── IDLE LOOP ── */
 function idleLoop(){
