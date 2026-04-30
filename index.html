@@ -131,6 +131,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   box-shadow:0 4px 16px rgba(245,166,35,.25);
 }
 .btn-retry:hover{opacity:.88;}
+.btn-home{
+  padding:12px 22px;
+  background:var(--bg3);border:1px solid var(--border2);
+  color:var(--txt2);border-radius:var(--r12);
+  font-size:14px;font-weight:700;cursor:pointer;
+  transition:all .15s;font-family:inherit;
+  display:inline-flex;align-items:center;gap:6px;
+}
+.btn-home:hover{border-color:var(--txt3);color:var(--txt);}
 
 /* ── MODAL ── */
 .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:500;
@@ -451,6 +460,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <div id="localOut" style="display:none" class="local-out-wrap"></div>
 
     <div class="res-actions">
+      <button class="btn-home" onclick="goHome()">← 홈으로</button>
       <button class="btn-retry" onclick="resetGame()">🎯 다시 던지기</button>
     </div>
   </div>
@@ -1313,6 +1323,20 @@ function renderLocalResult(guName){
         </div>`).join('')
     }</div>`;
   }
+}
+
+/* ── RESULT → HOME ── */
+function goHome(){
+  if(raf) cancelAnimationFrame(raf);
+  state='idle';pulling=false;curtainProg=0;hitDist=hitStation=hitLatLng=null;
+  mapRot=[0,90,180,270][Math.floor(Math.random()*4)];
+  shuffleDistricts();
+  buildMap(); drawCurtain(0); drawDart(DART_HOME.x,DART_HOME.y,-90,false);
+  document.getElementById('aiOut').style.display='block';
+  document.getElementById('localOut').style.display='none';
+  document.getElementById('resultScreen').classList.add('out');
+  document.getElementById('gameScreen').classList.add('out');
+  document.getElementById('homeScreen').classList.remove('out');
 }
 
 /* ── HOME → GAME ── */
