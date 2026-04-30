@@ -487,7 +487,7 @@ const STATIONS_RAW = [
   {n:'무악재',        gu:'서대문구', lat:37.5802, lng:126.9538},
   {n:'독립문',        gu:'서대문구', lat:37.5876, lng:126.9606},
   {n:'서대문',        gu:'서대문구', lat:37.5697, lng:126.9654},
-  {n:'충정로',        gu:'서대문구', lat:37.5595, lng:126.9659},
+  {n:'충정로',        gu:['서대문구','중구'], lat:37.5595, lng:126.9659},
   {n:'아현',          gu:'서대문구', lat:37.5568, lng:126.9557},
   {n:'이대',          gu:'서대문구', lat:37.5556, lng:126.9462},
   {n:'신촌',          gu:'서대문구', lat:37.5551, lng:126.9370},
@@ -521,7 +521,7 @@ const STATIONS_RAW = [
   {n:'공릉',          gu:'노원구', lat:37.6262, lng:127.0733},
   {n:'태릉입구',      gu:'노원구', lat:37.6188, lng:127.0724},
   {n:'화랑대',        gu:'노원구', lat:37.6262, lng:127.0795},
-  {n:'석계',          gu:'노원구', lat:37.6139, lng:127.0633},
+  {n:'석계',          gu:['노원구','성북구'], lat:37.6139, lng:127.0633},
   {n:'광운대',        gu:'노원구', lat:37.6231, lng:127.0570},
   {n:'월계',          gu:'노원구', lat:37.6338, lng:127.0520},
   // 강북구
@@ -558,7 +558,7 @@ const STATIONS_RAW = [
   {n:'답십리',        gu:'동대문구', lat:37.5671, lng:127.0465},
   {n:'용두',          gu:'동대문구', lat:37.5741, lng:127.0323},
   {n:'신설동',        gu:'동대문구', lat:37.5712, lng:127.0196},
-  {n:'동묘앞',        gu:'동대문구', lat:37.5723, lng:127.0161},
+  {n:'동묘앞',        gu:['동대문구','종로구'], lat:37.5723, lng:127.0161},
   // 중랑구
   {n:'신내',          gu:'중랑구', lat:37.6036, lng:127.1025},
   {n:'봉화산',        gu:'중랑구', lat:37.6169, lng:127.0954},
@@ -617,7 +617,7 @@ const STATIONS_RAW = [
   {n:'송정',          gu:'강서구', lat:37.5667, lng:126.8248},
   {n:'발산',          gu:'강서구', lat:37.5575, lng:126.8380},
   {n:'우장산',        gu:'강서구', lat:37.5470, lng:126.8462},
-  {n:'까치산',        gu:'강서구', lat:37.5366, lng:126.8452},
+  {n:'까치산',        gu:['강서구','양천구'], lat:37.5366, lng:126.8452},
   {n:'화곡',          gu:'강서구', lat:37.5356, lng:126.8527},
   {n:'증미',          gu:'강서구', lat:37.5556, lng:126.8560},
   {n:'가양',          gu:'강서구', lat:37.5601, lng:126.8537},
@@ -966,8 +966,8 @@ function findHit(x,y){
   // SD 기준으로 히트 구 탐색 (셔플된 이름 반영)
   let district=SD.find(d=>pip(rx,ry,parsePts(d.p)));
   if(!district) district=SD.reduce((b,d)=>Math.hypot(rx-d.cx,ry-d.cy)<Math.hypot(rx-b.cx,ry-b.cy)?d:b,SD[0]);
-  // 역의 gu 필드(행정구역 기준)로 정확히 필터링 → 구-역 불일치 완전 차단
-  const inDistrict=STATIONS.filter(s=>s.gu===district.n);
+  // gu가 배열이면 includes, 문자열이면 === 로 비교 (경계역 양쪽 구 지원)
+  const inDistrict=STATIONS.filter(s=>Array.isArray(s.gu)?s.gu.includes(district.n):s.gu===district.n);
   // 해당 구에 역이 없으면(금천구 등 역이 적은 구) 전역 폴백
   const pool=inDistrict.length?inDistrict:STATIONS;
   // 무작위 역 선택
