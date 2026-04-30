@@ -1986,7 +1986,7 @@ function renderStampGrid(){
   const grid = document.getElementById('stampGrid');
   grid.innerHTML = D.map(d => {
     const v = visitedGu.has(d.n);
-    const short = d.n.replace('구','');
+    const short = d.n.replace(/구$/, '');
     return `<div class="stamp-card${v?' visited':''}">
       ${v?'<span class="stamp-mark">✓</span>':''}
       <span class="stamp-card-short">${short}</span>
