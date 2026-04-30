@@ -340,6 +340,115 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 }
 .local-biz-desc{ font-size:12px;color:var(--txt2); }
 .local-biz-addr{ font-size:11px;color:var(--txt3);margin-top:2px; }
+
+/* ── MOOD SCREEN ── */
+#moodScreen{
+  justify-content:center;
+  padding:54px 0 24px;
+  align-items:center;
+  overflow-y:auto;
+}
+.mood-inner{
+  width:100%;max-width:680px;
+  padding:24px 20px;
+  display:flex;flex-direction:column;
+  gap:20px;
+}
+.mood-hd{ padding:0 2px 4px; }
+.mood-kicker{
+  font-size:11px;font-weight:600;letter-spacing:.6px;
+  color:var(--txt3);text-transform:uppercase;margin-bottom:10px;
+}
+.mood-title{
+  font-size:38px;font-weight:900;letter-spacing:-1.5px;
+  line-height:1;color:var(--txt);margin-bottom:8px;
+}
+.mood-sub{ font-size:13px;color:var(--txt2);line-height:1.6; }
+.mood-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(118px,1fr));
+  gap:10px;
+}
+.mood-chip{
+  background:var(--bg2);
+  border:1.5px solid var(--border);
+  border-radius:var(--r16);
+  padding:16px 10px 14px;
+  cursor:pointer;
+  display:flex;flex-direction:column;
+  align-items:center;gap:7px;
+  transition:all .15s;
+  text-align:center;user-select:none;
+}
+.mood-chip:hover{ border-color:var(--border2);background:var(--bg3); }
+.mood-chip.selected{
+  border-color:var(--gold);
+  background:linear-gradient(145deg,rgba(245,166,35,.1),var(--bg2));
+  box-shadow:0 0 0 1px rgba(245,166,35,.2);
+}
+.mood-chip-emoji{ font-size:30px;line-height:1; }
+.mood-chip-label{ font-size:13px;font-weight:800;color:var(--txt); }
+.mood-chip-desc{ font-size:10.5px;color:var(--txt3);line-height:1.3; }
+.btn-mood-next{
+  padding:16px;
+  background:var(--gold);color:#09090f;
+  border:none;border-radius:var(--r12);
+  font-size:15px;font-weight:900;
+  cursor:pointer;font-family:inherit;
+  transition:opacity .15s;
+  opacity:.3;pointer-events:none;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.btn-mood-next.ready{ opacity:1;pointer-events:auto; }
+.btn-mood-next.ready:hover{ opacity:.88; }
+
+/* ── RESULT MOOD BADGE ── */
+.res-mood-badge{
+  display:inline-flex;align-items:center;gap:5px;
+  margin-top:10px;
+  background:var(--bg3);border:1px solid var(--border2);
+  color:var(--txt2);font-size:12px;font-weight:700;
+  padding:4px 14px;border-radius:20px;
+}
+
+/* ── COURSE CARDS ── */
+.course-section{ margin-bottom:20px; }
+.course-section-title{
+  font-size:12px;font-weight:700;color:var(--txt3);
+  letter-spacing:.5px;text-transform:uppercase;
+  margin-bottom:10px;padding:0 2px;
+}
+.course-card{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:var(--r16);overflow:hidden;
+  margin-bottom:10px;
+}
+.course-card:last-child{ margin-bottom:0; }
+.course-card-hd{
+  display:flex;align-items:center;gap:10px;
+  padding:11px 16px 10px;
+  border-bottom:1px solid var(--border);
+  background:var(--bg3);
+}
+.course-num{
+  font-size:10px;font-weight:700;letter-spacing:.5px;
+  color:var(--txt3);text-transform:uppercase;flex-shrink:0;
+  background:var(--bg4);border:1px solid var(--border2);
+  padding:2px 8px;border-radius:20px;
+}
+.course-name{ font-size:13px;font-weight:800;color:var(--txt); }
+.course-stops{
+  display:flex;align-items:flex-start;
+  padding:13px 16px;gap:8px;flex-wrap:wrap;
+}
+.course-stop{
+  display:flex;flex-direction:column;gap:2px;
+  text-decoration:none;cursor:pointer;
+}
+.course-stop:hover .course-sname{ color:var(--gold); }
+.course-sname{ font-size:13px;font-weight:700;color:var(--txt);transition:color .12s; }
+.course-smeta{ font-size:10px;color:var(--txt3); }
+.course-arrow{ font-size:13px;color:var(--txt3);padding:2px 0;flex-shrink:0;margin-top:2px; }
 </style>
 </head>
 <body>
@@ -352,8 +461,23 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   </div>
 </header>
 
+<!-- MOOD SCREEN (첫 화면) -->
+<div class="screen" id="moodScreen">
+  <div class="mood-inner">
+    <div class="mood-hd">
+      <p class="mood-kicker">오늘의 나는?</p>
+      <h2 class="mood-title">기분을 골라봐</h2>
+      <p class="mood-sub">선택한 기분에 맞는 코스를 추천해 드려요</p>
+    </div>
+    <div class="mood-grid" id="moodGrid"></div>
+    <button class="btn-mood-next" id="moodNextBtn" onclick="confirmMood()">
+      출발 →
+    </button>
+  </div>
+</div>
+
 <!-- HOME SCREEN -->
-<div class="screen" id="homeScreen">
+<div class="screen out" id="homeScreen">
   <div class="home-inner">
 
     <div class="home-brand">
@@ -433,6 +557,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <div class="res-gu" id="resGu">—</div>
       <div class="res-dong" id="resDong"></div>
       <div class="res-range" id="resRange">역 반경 800m 주변 장소</div>
+      <div id="resMoodWrap" style="display:none"><span class="res-mood-badge" id="resMoodBadge"></span></div>
       <div><a class="map-link" id="mapLink" target="_blank" rel="noopener">🗺 카카오맵에서 보기</a></div>
     </div>
 
@@ -440,6 +565,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <div class="ai-loading" id="aiLoading">
         <div class="ai-spinner"></div>
         <div class="loading-txt">주변 장소를 불러오는 중...</div>
+      </div>
+      <div class="course-section" id="courseSection" style="display:none">
+        <div class="course-section-title" id="courseSectionTitle">추천 코스</div>
+        <div id="courseCards"></div>
       </div>
       <div class="res-grid" id="resGrid" style="display:none">
         <div class="res-card">
@@ -884,6 +1013,41 @@ let gameMode = 'dart'; // 'dart' | 'local'
 ══════════════════════════════════════════ */
 const LOCAL_BUSINESSES = [];
 
+/* ══════════════════════════════════════════
+   MOOD / CONCEPT DATA
+══════════════════════════════════════════ */
+const MOODS = [
+  {id:'broke',   emoji:'💸', label:'거지모드',    desc:'무료·저렴하게'},
+  {id:'active',  emoji:'🏃', label:'활발형',      desc:'땀 흘리고 싶어'},
+  {id:'walk',    emoji:'🚶', label:'가벼운 산책', desc:'여유롭게 걷기'},
+  {id:'sad',     emoji:'🌧', label:'우울',        desc:'감성 충전 힐링'},
+  {id:'happy',   emoji:'🎉', label:'기쁨',        desc:'신나게 즐기기'},
+  {id:'normal',  emoji:'😐', label:'평범',        desc:'무난하게 한 바퀴'},
+  {id:'angry',   emoji:'🔥', label:'분노',        desc:'스트레스 확 풀기'},
+  {id:'date',    emoji:'💕', label:'로맨틱',      desc:'설레는 데이트'},
+  {id:'solo',    emoji:'🍺', label:'혼밥·혼술',   desc:'나 혼자만의 시간'},
+  {id:'foodie',  emoji:'🍽', label:'탐식',        desc:'먹방 풀코스'},
+  {id:'cafe',    emoji:'☕', label:'카페 호핑',   desc:'카페 투어 하기'},
+  {id:'culture', emoji:'🎨', label:'문화 탐방',   desc:'전시·공연 보기'},
+];
+
+const COURSE_NAMES = {
+  broke:   ['공짜 탐방 코스',    '가성비 만렙 코스',   '동네 뚜벅이 코스'],
+  active:  ['파워 워킹 코스',    '에너지 발산 코스',   '땀 흘리기 코스'],
+  walk:    ['여유 산책 코스',    '발길 닿는 대로',     '동네 한 바퀴'],
+  sad:     ['마음 다독이기 코스', '조용한 힐링 코스',   '감성 충전 코스'],
+  happy:   ['신나는 탐방 코스',  '핫플 투어 코스',     '추억 만들기 코스'],
+  normal:  ['오늘도 무난하게',   '무탈한 하루 코스',   '그냥저냥 코스'],
+  angry:   ['화풀이 코스',       '스트레스 해소 코스', '분노 발산 코스'],
+  date:    ['로맨틱 데이트 코스', '설레는 오후 코스',   '둘만의 코스'],
+  solo:    ['나만의 시간 코스',  '고독한 탐방 코스',   '솔로 만끽 코스'],
+  foodie:  ['먹방 풀코스',       '식도락 투어 코스',   '맛집 순례 코스'],
+  cafe:    ['카페 호핑 코스',    '카페인 충전 코스',   '브런치 카페 코스'],
+  culture: ['문화 탐방 코스',    '전시 투어 코스',     '예술 감상 코스'],
+};
+
+let selectedMood = null;
+
 /* 구 이름을 폴리곤 위치와 무작위로 재조합 */
 function shuffleDistricts(){
   const names = D.map(d=>d.n);
@@ -1277,6 +1441,13 @@ function fmtDist(d){const n=+d;return n>=1000?(n/1000).toFixed(1)+'km':n+'m';}
 
 function renderRecs({attractions,restaurants,cafes}){
   document.getElementById('aiLoading').style.display='none';
+
+  if(selectedMood){
+    // 기분 모드 — 코스 카드로 표시
+    renderCourseCards({attractions,restaurants,cafes});
+    return;
+  }
+  // 기분 미선택 — 기존 그리드
   const fill=(id,items)=>{
     document.getElementById(id).innerHTML=items.length
       ?items.map(p=>`<li class="place-item"><a href="${p.place_url}" target="_blank" rel="noopener">
@@ -1288,6 +1459,50 @@ function renderRecs({attractions,restaurants,cafes}){
   };
   fill('list1',attractions); fill('list2',restaurants); fill('list3',cafes);
   document.getElementById('resGrid').style.display='grid';
+}
+
+function renderCourseCards({attractions,restaurants,cafes}){
+  // mood badge 표시
+  const mw=document.getElementById('resMoodWrap');
+  const mb=document.getElementById('resMoodBadge');
+  if(selectedMood){
+    mb.textContent=`${selectedMood.emoji} ${selectedMood.label} 코스`;
+    mw.style.display='block';
+  }
+
+  const names = (selectedMood && COURSE_NAMES[selectedMood.id]) || COURSE_NAMES.normal;
+  const a = attractions.slice(0,3);
+  const r = restaurants.slice(0,3);
+  const c = cafes.slice(0,3);
+
+  const courses = [0,1,2].map(i=>{
+    const stops=[];
+    if(a[i]) stops.push({p:a[i], icon:'🗺'});
+    if(r[i]) stops.push({p:r[i], icon:'🍽'});
+    if(c[i]) stops.push({p:c[i], icon:'☕'});
+    return {name:names[i], stops};
+  }).filter(co=>co.stops.length>0);
+
+  const html = courses.map((co,i)=>`
+    <div class="course-card">
+      <div class="course-card-hd">
+        <span class="course-num">코스 ${i+1}</span>
+        <span class="course-name">${co.name}</span>
+      </div>
+      <div class="course-stops">
+        ${co.stops.map((s,j)=>`
+          ${j>0?'<span class="course-arrow">→</span>':''}
+          <a class="course-stop" href="${s.p.place_url}" target="_blank" rel="noopener">
+            <span class="course-sname">${s.icon} ${s.p.place_name}</span>
+            <span class="course-smeta">${shortCat(s.p.category_name)} · ${fmtDist(s.p.distance)}</span>
+          </a>`).join('')}
+      </div>
+    </div>`).join('');
+
+  document.getElementById('courseCards').innerHTML = html || '<p style="font-size:13px;color:var(--txt3);padding:16px 0">주변 장소를 찾지 못했어요</p>';
+  const stitle=document.getElementById('courseSectionTitle');
+  if(selectedMood) stitle.textContent=`${selectedMood.emoji} ${selectedMood.label} 추천 코스`;
+  document.getElementById('courseSection').style.display='block';
 }
 
 /* ── 소상공인 결과 렌더링 ── */
@@ -1325,18 +1540,56 @@ function renderLocalResult(guName){
   }
 }
 
-/* ── RESULT → HOME ── */
+/* ── MOOD SCREEN ── */
+function renderMoodGrid(){
+  const grid=document.getElementById('moodGrid');
+  grid.innerHTML=MOODS.map(m=>`
+    <div class="mood-chip" data-id="${m.id}" onclick="selectMood('${m.id}')">
+      <span class="mood-chip-emoji">${m.emoji}</span>
+      <span class="mood-chip-label">${m.label}</span>
+      <span class="mood-chip-desc">${m.desc}</span>
+    </div>`).join('');
+}
+
+function selectMood(id){
+  selectedMood=MOODS.find(m=>m.id===id);
+  document.querySelectorAll('.mood-chip').forEach(c=>{
+    c.classList.toggle('selected',c.dataset.id===id);
+  });
+  const btn=document.getElementById('moodNextBtn');
+  btn.textContent=`${selectedMood.emoji} ${selectedMood.label}으로 출발 →`;
+  btn.classList.add('ready');
+}
+
+function confirmMood(){
+  if(!selectedMood) return;
+  document.getElementById('moodScreen').classList.add('out');
+  document.getElementById('homeScreen').classList.remove('out');
+}
+
+/* ── RESULT → MOOD SCREEN ── */
 function goHome(){
   if(raf) cancelAnimationFrame(raf);
   state='idle';pulling=false;curtainProg=0;hitDist=hitStation=hitLatLng=null;
   mapRot=[0,90,180,270][Math.floor(Math.random()*4)];
   shuffleDistricts();
   buildMap(); drawCurtain(0); drawDart(DART_HOME.x,DART_HOME.y,-90,false);
+  // 결과 패널 초기화
   document.getElementById('aiOut').style.display='block';
   document.getElementById('localOut').style.display='none';
+  document.getElementById('courseSection').style.display='none';
+  document.getElementById('resMoodWrap').style.display='none';
+  document.getElementById('resGrid').style.display='none';
+  // 기분 선택으로 돌아가기 (초기화)
+  selectedMood=null;
+  document.querySelectorAll('.mood-chip').forEach(c=>c.classList.remove('selected'));
+  const btn=document.getElementById('moodNextBtn');
+  btn.textContent='출발 →';
+  btn.classList.remove('ready');
   document.getElementById('resultScreen').classList.add('out');
   document.getElementById('gameScreen').classList.add('out');
-  document.getElementById('homeScreen').classList.remove('out');
+  document.getElementById('homeScreen').classList.add('out');
+  document.getElementById('moodScreen').classList.remove('out');
 }
 
 /* ── HOME → GAME ── */
@@ -1356,6 +1609,9 @@ function resetGame(){
   // 결과 패널 초기화
   document.getElementById('aiOut').style.display='block';
   document.getElementById('localOut').style.display='none';
+  document.getElementById('courseSection').style.display='none';
+  document.getElementById('resMoodWrap').style.display='none';
+  document.getElementById('resGrid').style.display='none';
   document.getElementById('resultScreen').classList.add('out');
   document.getElementById('gameScreen').classList.remove('out');
 }
@@ -1374,6 +1630,9 @@ function saveKey(){
     fetchRecs();
   }
 }
+
+/* ── INIT ── */
+renderMoodGrid();
 
 /* ── IDLE LOOP ── */
 function idleLoop(){
