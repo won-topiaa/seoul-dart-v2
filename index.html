@@ -2707,21 +2707,11 @@ function saveKey(){
   }
 }
 
-/* ── 첫 방문 안내 (인트로 모달) ──
-   localStorage 플래그가 없고 방문한 구도 없으면 (= 처음 방문) 모달 표시.
-   기존 사용자(이미 스탬프가 있는 분)에게는 표시하지 않음. */
-function showIntroIfNeeded(){
-  const seen = (()=>{ try{ return localStorage.getItem('sdt_intro_seen'); }catch(e){ return null; } })();
-  if(seen) return;
-  if(visitedGu.size > 0){
-    // 이미 사용해 본 사용자 — 안내 없이 플래그만 세팅
-    try{ localStorage.setItem('sdt_intro_seen','1'); }catch(e){}
-    return;
-  }
+/* ── 사용 안내 모달 (방문할 때마다 표시) ── */
+function showIntro(){
   document.getElementById('introModal').classList.remove('hidden');
 }
 function dismissIntro(){
-  try{ localStorage.setItem('sdt_intro_seen','1'); }catch(e){}
   document.getElementById('introModal').classList.add('hidden');
 }
 
@@ -2729,7 +2719,7 @@ function dismissIntro(){
 renderMoodGrid();
 document.getElementById('hdrStampCount').textContent = visitedGu.size;
 renderResumeBanner(); // 24h 이내 진행 중 세션이 있으면 첫 화면에 "이어서 하기" 배너 표시
-showIntroIfNeeded(); // 첫 방문자에게 사용 방법 안내
+showIntro(); // 매 방문마다 사용 방법 안내
 
 /* ── IDLE LOOP ── */
 function idleLoop(){
