@@ -188,6 +188,65 @@ a,button,label,[role="button"]{-webkit-tap-highlight-color:transparent;touch-act
 }
 .modal-cancel:hover{border-color:var(--border2);}
 
+/* ── INTRO MODAL (첫 방문 안내) ── */
+.intro-modal{
+  background:var(--bg2);border:1px solid var(--border2);
+  border-radius:var(--r20);padding:28px 22px 22px;
+  max-width:420px;width:92%;max-height:88vh;overflow-y:auto;
+  box-shadow:0 12px 40px rgba(0,0,0,.5);
+}
+.intro-hd{ text-align:center;margin-bottom:20px; }
+.intro-logo{
+  width:54px;height:54px;margin:0 auto 12px;
+  background:linear-gradient(135deg,#f5a623,#ff6b35);
+  border-radius:14px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:28px;
+  box-shadow:0 6px 20px rgba(245,166,35,.4);
+}
+.intro-title{
+  font-size:22px;font-weight:900;letter-spacing:-.7px;
+  background:linear-gradient(135deg,#f5a623,#ff9f43);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  margin-bottom:6px;
+}
+.intro-sub{ font-size:12.5px;color:var(--txt2);line-height:1.6; }
+.intro-steps{ display:flex;flex-direction:column;gap:10px;margin-bottom:18px; }
+.intro-step{
+  display:flex;gap:12px;align-items:flex-start;
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:var(--r12);padding:12px 13px;
+}
+.intro-step-num{
+  width:24px;height:24px;flex-shrink:0;
+  background:var(--gold);color:#0c0f1c;
+  border-radius:7px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:900;
+  margin-top:1px;
+}
+.intro-step-text{ flex:1;min-width:0; }
+.intro-step-title{
+  font-size:13.5px;font-weight:800;color:var(--txt);
+  margin-bottom:2px;letter-spacing:-.2px;
+}
+.intro-step-desc{ font-size:11.5px;color:var(--txt2);line-height:1.5; }
+.intro-btn{
+  width:100%;padding:13px;
+  background:var(--gold);color:#09090f;
+  border:none;border-radius:var(--r12);
+  font-size:15px;font-weight:900;letter-spacing:-.2px;
+  cursor:pointer;font-family:inherit;
+  transition:opacity .15s,transform .1s;
+}
+.intro-btn:hover{ opacity:.9; }
+.intro-btn:active{ transform:scale(.98); }
+@media(max-width:480px){
+  .intro-modal{ padding:24px 18px 18px; }
+  .intro-title{ font-size:20px; }
+  .intro-step{ padding:11px 12px; }
+}
+
 /* ── DISTRICT PULSE ── */
 @keyframes distPulse{0%,100%{opacity:.6;transform:scale(1);}50%{opacity:1;transform:scale(1.15);}}
 .dist-label-hit{animation:distPulse .9s ease-in-out 3;}
@@ -1049,6 +1108,48 @@ a,button,label,[role="button"]{-webkit-tap-highlight-color:transparent;touch-act
       <button class="btn-home" onclick="goHome()">← 홈으로</button>
       <button class="btn-retry" onclick="resetGame()">🎯 다시 던지기</button>
     </div>
+  </div>
+</div>
+
+<!-- INTRO MODAL (첫 방문 안내) -->
+<div class="modal-bg hidden" id="introModal">
+  <div class="intro-modal">
+    <div class="intro-hd">
+      <div class="intro-logo" aria-hidden="true">🎯</div>
+      <div class="intro-title">서울다트에 오신 걸 환영합니다</div>
+      <div class="intro-sub">결정장애를 위한 오늘의 동네 추첨기</div>
+    </div>
+    <div class="intro-steps">
+      <div class="intro-step">
+        <div class="intro-step-num">1</div>
+        <div class="intro-step-text">
+          <div class="intro-step-title">기분 고르기</div>
+          <div class="intro-step-desc">오늘의 기분에 맞춰 코스를 추천해 드려요</div>
+        </div>
+      </div>
+      <div class="intro-step">
+        <div class="intro-step-num">2</div>
+        <div class="intro-step-text">
+          <div class="intro-step-title">모드 선택 — 다트 / 소상공인</div>
+          <div class="intro-step-desc">서울 전역 무작위 픽 또는 동네 가게 둘러보기</div>
+        </div>
+      </div>
+      <div class="intro-step">
+        <div class="intro-step-num">3</div>
+        <div class="intro-step-text">
+          <div class="intro-step-title">다트 던지기 🎯</div>
+          <div class="intro-step-desc">발사대 줄을 당겨서 놓으면 운명의 동네 결정!</div>
+        </div>
+      </div>
+      <div class="intro-step">
+        <div class="intro-step-num">4</div>
+        <div class="intro-step-text">
+          <div class="intro-step-title">방문 인증 + 스탬프 모으기</div>
+          <div class="intro-step-desc">사진 찍어 인증하고 서울 25개 구를 정복해 보세요</div>
+        </div>
+      </div>
+    </div>
+    <button class="intro-btn" onclick="dismissIntro()">시작하기 →</button>
   </div>
 </div>
 
@@ -2606,10 +2707,29 @@ function saveKey(){
   }
 }
 
+/* ── 첫 방문 안내 (인트로 모달) ──
+   localStorage 플래그가 없고 방문한 구도 없으면 (= 처음 방문) 모달 표시.
+   기존 사용자(이미 스탬프가 있는 분)에게는 표시하지 않음. */
+function showIntroIfNeeded(){
+  const seen = (()=>{ try{ return localStorage.getItem('sdt_intro_seen'); }catch(e){ return null; } })();
+  if(seen) return;
+  if(visitedGu.size > 0){
+    // 이미 사용해 본 사용자 — 안내 없이 플래그만 세팅
+    try{ localStorage.setItem('sdt_intro_seen','1'); }catch(e){}
+    return;
+  }
+  document.getElementById('introModal').classList.remove('hidden');
+}
+function dismissIntro(){
+  try{ localStorage.setItem('sdt_intro_seen','1'); }catch(e){}
+  document.getElementById('introModal').classList.add('hidden');
+}
+
 /* ── INIT ── */
 renderMoodGrid();
 document.getElementById('hdrStampCount').textContent = visitedGu.size;
 renderResumeBanner(); // 24h 이내 진행 중 세션이 있으면 첫 화면에 "이어서 하기" 배너 표시
+showIntroIfNeeded(); // 첫 방문자에게 사용 방법 안내
 
 /* ── IDLE LOOP ── */
 function idleLoop(){
