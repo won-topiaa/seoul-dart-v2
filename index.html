@@ -1647,43 +1647,99 @@ function pickNextRot(){
   return opts[Math.floor(Math.random()*opts.length)];
 }
 
-/* ── 거지모드 가격 휴리스틱 필터 ──
-   Kakao Local API는 메뉴 가격 데이터를 제공하지 않으므로
-   브랜드명·카테고리명 기반으로 저가 가게를 추정 큐레이션함.
-   (정확한 가격 검증 불가 — 매장별 차이 있음을 UI에 안내) */
-const BROKE_FILTERS = {
-  // 놀거리 — 무료/산책 가능 키워드
-  attractionInclude: ['공원','산책','천변','둘레길','광장','하천','강변','한강','뚝섬','서울숲','월드컵공원','올림픽공원','남산','북한산','청계천','서울로','시장','전통시장','도서관','박물관 > 시립','박물관 > 국립','광화문','경복궁'],
-  // 놀거리 — 유료 가능성 높은 곳 제외
-  attractionExclude: ['워터파크','테마파크','놀이공원','아쿠아리움','동물원','수족관','체험관','VR','실내테마','이용료','입장료','키즈카페','방탈출','클럽','당구장','노래방'],
-  // 카페 — 저가 프랜차이즈 (메인 메뉴 ~3,000원대)
-  cafeBrands: ['메가','컴포즈','빽다방','백다방','매머드','더벤티','이디야','토프레소','바나프레소','커피베이','커피마마','커피온리','하삼동','커피니','만랩','파스쿠찌','커피에반하다','쥬씨','요거프레소','드롭탑','카페베네','할리스 익스프레스'],
-  // 음식점 — 저가 카테고리 (메인 ~9,000원 이하 가능)
-  foodCategories: ['분식','김밥','도시락','백반','국밥','라면','죽','국수','냉면','쌀국수','돈가스','김치찌개','순대','족발','치킨','떡볶이','만두','곱창','보쌈','짬뽕','짜장','중식','한식','샌드위치','패스트푸드','버거','햄버거','쌈밥','비빔밥'],
-  // 음식점 — 고가 카테고리 제외
-  foodExclude: ['오마카세','코스요리','스시바','한정식','횟집','스테이크','파인다이닝','이탈리아','와인','다이닝','뷔페','셰프','프렌치'],
+/* ── 12가지 기분별 코스 큐레이션 프로파일 ──
+   거지모드: 하드 필터 (매칭만 노출)
+   나머지: 소프트 랭킹 (매칭 가게가 위로, 부족하면 일반 가게로 폴백)
+   각 프로파일은 attraction(놀거리)·food(음식점)·cafe(카페)의 include/exclude 키워드를 가짐. */
+const MOOD_PROFILES = {
+  broke: { // 💸 거지모드 — 하드 필터
+    strict: true,
+    attraction: {
+      include: ['공원','산책','천변','둘레길','광장','하천','강변','한강','뚝섬','서울숲','월드컵공원','올림픽공원','남산','북한산','청계천','서울로','시장','전통시장','도서관','광화문','경복궁'],
+      exclude: ['워터파크','테마파크','놀이공원','아쿠아리움','동물원','수족관','체험관','VR','이용료','입장료','키즈카페','방탈출','클럽','당구장','노래방'],
+    },
+    food: {
+      include: ['분식','김밥','도시락','백반','국밥','라면','죽','국수','냉면','쌀국수','돈가스','김치찌개','순대','족발','치킨','떡볶이','만두','곱창','보쌈','짬뽕','짜장','중식','한식','샌드위치','패스트푸드','버거','햄버거','쌈밥','비빔밥'],
+      exclude: ['오마카세','코스요리','스시바','한정식','횟집','스테이크','파인다이닝','이탈리아','와인','다이닝','뷔페','셰프','프렌치'],
+    },
+    cafe: {
+      include: ['메가','컴포즈','빽다방','백다방','매머드','더벤티','이디야','토프레소','바나프레소','커피베이','커피마마','커피온리','하삼동','커피니','만랩','파스쿠찌','커피에반하다','쥬씨','요거프레소','드롭탑'],
+    },
+  },
+  active: { // 🏃 활발형
+    attraction: { include: ['공원','산책','둘레길','자전거','한강','등산','트레일','체육','스포츠','클라이밍','풋살','농구','테니스','수영','요가','필라테스','액티비티'] },
+    food: { include: ['샐러드','단백질','포케','스무디','쌀국수','비빔밥','한식','두부','채식','다이어트','쉐이크'], exclude: ['튀김','패스트푸드'] },
+    cafe: { include: ['스무디','주스','샐러드','베이커리','오가닉','자연','브런치'] },
+  },
+  walk: { // 🚶 가벼운 산책
+    attraction: { include: ['공원','산책','둘레길','천변','강변','정원','수목원','한강','거리','골목','뚝섬','서울숲','경복궁','북촌','서촌','한옥'] },
+    food: { include: ['한식','분식','국수','쌀국수','죽','우동','국밥','파스타','샌드위치','브런치','떡볶이'] },
+    cafe: { include: ['루프탑','테라스','한적','골목','정원','감성','독립','북카페','자연','한옥'] },
+  },
+  sad: { // 🌧 우울
+    attraction: { include: ['갤러리','전시','북카페','서점','도서관','미술관','박물관','전시관','독립서점','한적','한옥','정원'], exclude: ['놀이공원','테마파크','클럽','노래방'] },
+    food: { include: ['수프','죽','국밥','우동','파스타','한식','일식','국수','초밥','쌀국수','일본식','덮밥'], exclude: ['치킨','술집','이자카야','곱창'] },
+    cafe: { include: ['북카페','독립서점','조용','감성','LP','음악','한적','독서','책','재즈','클래식'] },
+  },
+  happy: { // 🎉 기쁨
+    attraction: { include: ['놀이공원','축제','광장','뷰포인트','전망대','맛집거리','핫플','한강공원','거리','쇼핑','로데오','신촌','홍대','강남','명동','성수'] },
+    food: { include: ['뷔페','고기','삼겹살','피자','파스타','중식','한식','분식','떡볶이','마라탕','마라','곱창','BBQ','구이'] },
+    cafe: { include: ['디저트','베이커리','브런치','루프탑','감성','포토','인스타','핫플','신메뉴'] },
+  },
+  normal: null, // 😐 평범 — 필터 없음 (카카오 기본 정렬)
+  angry: { // 🔥 분노
+    attraction: { include: ['클라이밍','노래방','PC방','코인노래방','VR','서바이벌','액티비티','오락','펀치','스포츠','스크린','오락실','다이브','복싱'] },
+    food: { include: ['매운','마라','떡볶이','짬뽕','김치찌개','부대찌개','닭발','곱창','불닭','육개장','전골','매운탕','마라탕','순대','족발'] },
+    cafe: { include: ['술','펍','이자카야','와인바','맥주','와인','루프탑'] },
+  },
+  date: { // 💕 로맨틱
+    attraction: { include: ['공원','전망대','한강','뷰포인트','갤러리','전시','연남','서촌','북촌','종로','한옥','경복궁','데이트','분위기','야경','서울숲','남산','대학로'] },
+    food: { include: ['파스타','이탈리안','와인','스테이크','일식','초밥','한정식','퓨전','프렌치','분위기','오마카세','다이닝','와인바'] },
+    cafe: { include: ['루프탑','테라스','뷰','분위기','감성','와인','소품','데이트','한옥','갤러리','북카페','정원'] },
+  },
+  solo: { // 🍺 혼밥·혼술
+    attraction: { include: ['카페','서점','도서관','전시','갤러리','공원','독립서점','산책','시장'] },
+    food: { include: ['우동','라멘','쌀국수','국밥','일식','초밥','한식','분식','이자카야','일본식','국수','덮밥','정식','혼밥'] },
+    cafe: { include: ['1인','조용','독서','책','북카페','독립','LP','재즈','감성','한적','이자카야','술','와인바','펍'] },
+  },
+  foodie: { // 🍽 탐식
+    attraction: { include: ['전통시장','시장','맛집거리','푸드','맛집','거리','종로','명동','광장시장','경동시장'] },
+    food: { include: ['오마카세','파인다이닝','맛집','셰프','코스','한정식','이탈리안','프렌치','중식','일식','한식','횟집','뷔페','BBQ','스테이크','초밥','다이닝','퓨전','전통','노포'] },
+    cafe: { include: ['디저트','베이커리','파티세리','빵집','케이크','마카롱','초콜릿','아이스크림','젤라또','스페셜티'] },
+  },
+  cafe: { // ☕ 카페 호핑
+    attraction: { include: ['카페','거리','골목','연남','성수','북촌','한남','이태원','경리단','로데오','서촌'] },
+    food: { include: ['브런치','샌드위치','베이커리','파스타','샐러드','디저트','수프','오믈렛','와플'] },
+    cafe: { include: ['카페','로스터리','베이커리','디저트','루프탑','테라스','감성','독립','북카페','한옥','정원','브런치','드립','스페셜티','핸드드립'] },
+  },
+  culture: { // 🎨 문화 탐방
+    attraction: { include: ['갤러리','전시','미술관','박물관','공연장','극장','문화센터','아트','전시관','한옥','경복궁','창덕궁','창경궁','덕수궁','북촌','서촌','대학로','예술','국립','시립'] },
+    food: { include: ['한식','이탈리안','일식','파스타','한정식','퓨전','전통','분위기','한옥','노포'] },
+    cafe: { include: ['갤러리','북카페','독립서점','감성','한옥','전시','문화','예술','로스터리'] },
+  },
 };
-function filterBrokeAttraction(items){
-  const filtered = items.filter(p => {
-    const txt = (p.place_name || '') + ' ' + (p.category_name || '');
-    if (BROKE_FILTERS.attractionExclude.some(k => txt.includes(k))) return false;
-    return BROKE_FILTERS.attractionInclude.some(k => txt.includes(k));
-  });
-  return filtered.length > 0 ? filtered : items; // 결과 없으면 원본 폴백
-}
-function filterBrokeCafe(items){
-  const filtered = items.filter(p =>
-    BROKE_FILTERS.cafeBrands.some(b => (p.place_name || '').includes(b))
-  );
-  return filtered.length > 0 ? filtered : items;
-}
-function filterBrokeFood(items){
-  const filtered = items.filter(p => {
-    const cat = p.category_name || '';
-    if (BROKE_FILTERS.foodExclude.some(k => cat.includes(k))) return false;
-    return BROKE_FILTERS.foodCategories.some(k => cat.includes(k));
-  });
-  return filtered.length > 0 ? filtered : items;
+
+/* 기분별 큐레이션 — 키워드 점수화 후 정렬 (거지모드는 매칭만 남김) */
+function rankByMood(items, type, mood){
+  const profile = mood && MOOD_PROFILES[mood.id];
+  if(!profile || !profile[type]) return items;
+  const { include = [], exclude = [] } = profile[type];
+
+  const scored = items.map(p => {
+    const txt = ((p.place_name || '') + ' ' + (p.category_name || '')).toLowerCase();
+    let score = 0;
+    for(const kw of include) if(txt.includes(kw.toLowerCase())) score += 1;
+    for(const kw of exclude) if(txt.includes(kw.toLowerCase())) score -= 3;
+    return { item: p, score };
+  }).sort((a,b) => b.score - a.score || (+a.item.distance - +b.item.distance));
+
+  if(profile.strict){
+    // 거지모드 — 매칭(score>0)만 남김. 결과가 없으면 원본 폴백
+    const matched = scored.filter(x => x.score > 0).map(x => x.item);
+    return matched.length > 0 ? matched : items;
+  }
+  // 다른 기분 — 매칭 가게가 위로, 미매칭은 아래로 (전체 유지)
+  return scored.map(x => x.item);
 }
 
 /* ── 세션 이어하기 (다트 결과 24시간 유지) ──
@@ -2221,9 +2277,8 @@ async function fetchRecs(radius=800){
   const {lat,lng}=hitLatLng;
   const headers={'Authorization':`KakaoAK ${kakaoKey}`};
   const base='https://dapi.kakao.com/v2/local/search/category.json';
-  // 거지모드: 가격 휴리스틱 필터링을 위해 후보 풀을 더 크게 (size=15가 카카오 최대)
-  const isBroke = selectedMood?.id === 'broke';
-  const querySize = isBroke ? 15 : 5;
+  // 기분 선택 시 후보 풀을 카카오 최대치(15)로 확대 — 큐레이션 정확도 향상
+  const querySize = selectedMood ? 15 : 5;
   try{
     const[at,ct,fd,ce]=await Promise.all([
       fetch(`${base}?category_group_code=AT4&x=${lng}&y=${lat}&radius=${radius}&sort=accuracy&size=${querySize}`,{headers}).then(r=>r.json()),
@@ -2234,11 +2289,11 @@ async function fetchRecs(radius=800){
     let attractions=[...(at.documents||[]),...(ct.documents||[])].sort((a,b)=>+a.distance-+b.distance);
     let restaurants=(fd.documents||[]);
     let cafes=(ce.documents||[]);
-    // 거지모드 후처리 — 무료/저가 가능성 높은 가게로 큐레이션
-    if(isBroke){
-      attractions = filterBrokeAttraction(attractions);
-      restaurants = filterBrokeFood(restaurants);
-      cafes       = filterBrokeCafe(cafes);
+    // 기분별 큐레이션 — 거지모드는 하드 필터, 다른 기분은 소프트 랭킹
+    if(selectedMood){
+      attractions = rankByMood(attractions, 'attraction', selectedMood);
+      restaurants = rankByMood(restaurants, 'food',        selectedMood);
+      cafes       = rankByMood(cafes,       'cafe',        selectedMood);
     }
     attractions = attractions.slice(0,4);
     restaurants = restaurants.slice(0,4);
