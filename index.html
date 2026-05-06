@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>서울 다트 — 오늘 어디 갈까?</title>
 <meta name="description" content="서울 지도에 다트를 던져 오늘 갈 동네를 정해드립니다. MBTI-P 우유부단 탈출기.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Hi+Melody&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#090c14;--bg2:#0f1320;--bg3:#161c2e;--bg4:#1c2438;
@@ -13,11 +16,19 @@
   --gold:#f5a623;--goldL:rgba(245,166,35,.18);--goldD:rgba(245,166,35,.07);
   --red:#ff4d5e;--blue:#4f8ef7;--green:#00d09c;
   --r12:12px;--r16:16px;--r20:20px;
+  --font-hand:'Gaegu','Hi Melody',cursive; /* 손글씨 액센트 */
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 html,body{height:100%;overflow:hidden;}
 html{-webkit-text-size-adjust:100%;}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--txt);}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--txt);position:relative;}
+/* ── 종이 질감 — 미세한 도트 패턴으로 노트북 느낌 ── */
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:1;
+  background-image:radial-gradient(rgba(255,255,255,.025) 1px, transparent 1px);
+  background-size:22px 22px;
+  opacity:.6;
+}
 /* 터치 기기 — 탭 하이라이트 제거 + 300ms 딜레이 제거 */
 a,button,label,[role="button"]{-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
 
@@ -77,7 +88,14 @@ a,button,label,[role="button"]{-webkit-tap-highlight-color:transparent;touch-act
   font-size:36px;font-weight:900;letter-spacing:-1.5px;line-height:1;
   background:linear-gradient(135deg,#f5a623,#ff9f43);
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-  margin-bottom:6px;
+  margin-bottom:14px;
+  position:relative;display:inline-block;
+}
+/* 결과 구 이름 아래 손그림 동그라미 강조 */
+.res-gu::after{
+  content:'';position:absolute;left:-8px;right:-8px;bottom:-12px;height:10px;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 10' preserveAspectRatio='none'><path d='M3 6 Q 50 1 100 5 T 197 6' stroke='%23f5a623' stroke-width='3' fill='none' stroke-linecap='round' opacity='0.85'/></svg>");
+  background-repeat:no-repeat;background-size:100% 100%;
 }
 .res-dong{font-size:20px;font-weight:800;color:var(--txt);letter-spacing:-.5px;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:4px;}
 .res-range{
@@ -553,14 +571,23 @@ a,button,label,[role="button"]{-webkit-tap-highlight-color:transparent;touch-act
 }
 .resume-banner-close:hover{ background:rgba(255,255,255,.06);color:var(--txt); }
 .mood-kicker{
-  font-size:11px;font-weight:600;letter-spacing:.6px;
-  color:var(--txt3);text-transform:uppercase;margin-bottom:10px;
+  font-family:var(--font-hand);
+  font-size:18px;font-weight:700;letter-spacing:0;
+  color:var(--gold);margin-bottom:6px;
+  transform:rotate(-2deg);display:inline-block;
 }
 .mood-title{
   font-size:38px;font-weight:900;letter-spacing:-1.5px;
-  line-height:1;color:var(--txt);margin-bottom:8px;
+  line-height:1;color:var(--txt);margin-bottom:14px;
+  position:relative;display:inline-block;
 }
-.mood-sub{ font-size:13px;color:var(--txt2);line-height:1.6; }
+/* 손그림 물결 밑줄 — SVG 인라인 (다크모드에 골드 색상) */
+.mood-title::after{
+  content:'';position:absolute;left:-4px;right:-4px;bottom:-10px;height:7px;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 7' preserveAspectRatio='none'><path d='M2 4 Q 25 1 50 4 T 100 4 T 150 4 T 198 4' stroke='%23f5a623' stroke-width='2.5' fill='none' stroke-linecap='round'/></svg>");
+  background-repeat:no-repeat;background-size:100% 100%;
+}
+.mood-sub{ font-size:13px;color:var(--txt2);line-height:1.6;margin-top:4px; }
 .mood-grid{
   display:grid;
   grid-template-columns:repeat(auto-fill,minmax(118px,1fr));
@@ -574,18 +601,31 @@ a,button,label,[role="button"]{-webkit-tap-highlight-color:transparent;touch-act
   cursor:pointer;
   display:flex;flex-direction:column;
   align-items:center;gap:7px;
-  transition:all .15s;
+  transition:all .2s cubic-bezier(.4,1.4,.5,1);
   text-align:center;user-select:none;
+  box-shadow:0 2px 0 rgba(0,0,0,.18);
 }
-.mood-chip:hover{ border-color:var(--border2);background:var(--bg3); }
+/* 스티커처럼 살짝씩 다른 각도 — mood chip 변동성 */
+.mood-chip:nth-child(3n+1){ transform:rotate(-1deg); }
+.mood-chip:nth-child(3n+2){ transform:rotate(.6deg); }
+.mood-chip:nth-child(3n+3){ transform:rotate(-.4deg); }
+.mood-chip:nth-child(5n){ transform:rotate(1.2deg); }
+.mood-chip:hover{
+  border-color:var(--border2);background:var(--bg3);
+  transform:rotate(0deg) scale(1.04);
+}
 .mood-chip.selected{
   border-color:var(--gold);
-  background:linear-gradient(145deg,rgba(245,166,35,.1),var(--bg2));
-  box-shadow:0 0 0 1px rgba(245,166,35,.2);
+  background:linear-gradient(145deg,rgba(245,166,35,.14),var(--bg2));
+  box-shadow:0 0 0 1.5px rgba(245,166,35,.35),0 6px 18px rgba(245,166,35,.18);
+  transform:rotate(0deg) scale(1.05);
 }
 .mood-chip-emoji{ font-size:30px;line-height:1; }
 .mood-chip-label{ font-size:13px;font-weight:800;color:var(--txt); }
-.mood-chip-desc{ font-size:10.5px;color:var(--txt3);line-height:1.3; }
+.mood-chip-desc{
+  font-family:var(--font-hand);
+  font-size:13px;color:var(--txt2);line-height:1.2;letter-spacing:0;
+}
 .btn-mood-next{
   padding:16px;
   background:var(--gold);color:#09090f;
@@ -622,9 +662,11 @@ a,button,label,[role="button"]{-webkit-tap-highlight-color:transparent;touch-act
 /* ── COURSE CARDS ── */
 .course-section{ margin-bottom:20px; }
 .course-section-title{
-  font-size:12px;font-weight:700;color:var(--txt3);
-  letter-spacing:.5px;text-transform:uppercase;
+  font-family:var(--font-hand);
+  font-size:18px;font-weight:700;color:var(--gold);
+  letter-spacing:0;
   margin-bottom:10px;padding:0 2px;
+  transform:rotate(-1.5deg);display:inline-block;
 }
 .course-card{
   background:var(--bg2);border:1px solid var(--border);
@@ -639,12 +681,14 @@ a,button,label,[role="button"]{-webkit-tap-highlight-color:transparent;touch-act
   background:var(--bg3);
 }
 .course-num{
-  font-size:10px;font-weight:700;letter-spacing:.5px;
-  color:var(--txt3);text-transform:uppercase;flex-shrink:0;
-  background:var(--bg4);border:1px solid var(--border2);
-  padding:2px 8px;border-radius:20px;
+  font-family:var(--font-hand);
+  font-size:14px;font-weight:700;letter-spacing:0;
+  color:var(--gold);flex-shrink:0;
+  background:var(--goldD);border:1.5px dashed rgba(245,166,35,.45);
+  padding:2px 11px;border-radius:8px;
+  transform:rotate(-3deg);
 }
-.course-name{ font-size:13px;font-weight:800;color:var(--txt); }
+.course-name{ font-family:var(--font-hand);font-size:18px;font-weight:700;color:var(--txt); }
 .course-stops{
   display:flex;align-items:flex-start;
   padding:13px 16px;gap:8px;flex-wrap:wrap;
@@ -791,7 +835,14 @@ a,button,label,[role="button"]{-webkit-tap-highlight-color:transparent;touch-act
 .stamp-hd{ display:flex;flex-direction:column;gap:10px; }
 .stamp-title{
   font-size:32px;font-weight:900;letter-spacing:-1.5px;
-  line-height:1;color:var(--txt);
+  line-height:1.1;color:var(--txt);
+  position:relative;display:inline-block;
+}
+/* 스탬프 컬렉션 제목 아래 손그림 강조선 */
+.stamp-title::after{
+  content:'';position:absolute;left:0;right:30%;bottom:-8px;height:8px;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 8' preserveAspectRatio='none'><path d='M3 5 Q 30 1 60 4 T 120 5 T 197 4' stroke='%23f5a623' stroke-width='2.5' fill='none' stroke-linecap='round'/></svg>");
+  background-repeat:no-repeat;background-size:100% 100%;
 }
 .stamp-bar-row{ display:flex;align-items:center;gap:10px; }
 .stamp-bar{
@@ -825,29 +876,46 @@ a,button,label,[role="button"]{-webkit-tap-highlight-color:transparent;touch-act
   border-radius:var(--r12);
   padding:14px 6px 11px;
   text-align:center;position:relative;
-  transition:border-color .2s,background .2s;
+  transition:border-color .2s,background .2s,transform .25s;
 }
+/* 방문 완료 — 진짜 도장 느낌으로 (점선 테두리·살짝 기울어짐) */
 .stamp-card.visited{
-  border-color:rgba(245,166,35,.45);
-  background:linear-gradient(145deg,rgba(245,166,35,.09),var(--bg2));
+  border:2px dashed rgba(245,166,35,.55);
+  background:radial-gradient(circle at 30% 20%, rgba(245,166,35,.18), rgba(245,166,35,.04) 70%);
+  box-shadow:0 2px 0 rgba(245,166,35,.08);
 }
+/* 방문한 카드마다 살짝 다른 각도로 — 도장 컬렉션 느낌 */
+.stamp-card.visited:nth-child(3n+1){ transform:rotate(-1.8deg); }
+.stamp-card.visited:nth-child(3n+2){ transform:rotate(1.4deg); }
+.stamp-card.visited:nth-child(3n+3){ transform:rotate(-0.6deg); }
+.stamp-card.visited:nth-child(5n){ transform:rotate(2.2deg); }
+.stamp-card.visited:nth-child(7n){ transform:rotate(-2.4deg); }
 .stamp-mark{
-  position:absolute;top:6px;right:8px;
-  font-size:11px;color:var(--gold);font-weight:900;
+  position:absolute;top:5px;right:7px;
+  font-family:var(--font-hand);
+  font-size:14px;color:var(--gold);font-weight:700;
+  transform:rotate(8deg);
 }
 .stamp-card-short{
   display:block;font-size:17px;font-weight:900;
   letter-spacing:-.5px;
   color:var(--txt3);
 }
-.stamp-card.visited .stamp-card-short{ color:var(--gold); }
+.stamp-card.visited .stamp-card-short{
+  color:var(--gold);font-family:var(--font-hand);font-size:21px;font-weight:700;
+}
 .stamp-card-full{
   display:block;font-size:9.5px;color:var(--txt3);
   margin-top:3px;opacity:.55;
 }
-.stamp-card.visited .stamp-card-full{ opacity:.8; }
+.stamp-card.visited .stamp-card-full{ opacity:.85;font-family:var(--font-hand);font-size:11px;letter-spacing:0; }
 .stamp-card.visited{ cursor:pointer; }
-.stamp-card.visited:hover{ border-color:rgba(245,166,35,.7);transform:scale(1.03);transition:transform .12s; }
+.stamp-card.visited:hover{
+  border-color:rgba(245,166,35,.85);
+  transform:rotate(0deg) scale(1.06);
+  transition:transform .15s;
+  z-index:2;
+}
 
 /* ── PHOTO GALLERY VIEW ── */
 .stamp-photo-view{ display:none;flex-direction:column;gap:16px; }
@@ -869,20 +937,41 @@ a,button,label,[role="button"]{-webkit-tap-highlight-color:transparent;touch-act
 .photo-grid{
   display:grid;
   grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
-  gap:10px;
+  gap:18px 14px;
+  padding:8px 4px;
 }
+/* 폴라로이드 스타일 — 흰색 프레임 + 살짝 기울어짐 + 그림자 */
 .photo-card{
-  border-radius:var(--r12);overflow:hidden;
-  background:var(--bg2);border:1px solid var(--border);
+  background:#f5f1e8;border-radius:6px;
+  padding:10px 10px 14px;
+  box-shadow:0 6px 18px rgba(0,0,0,.45),0 2px 0 rgba(255,255,255,.04);
+  transition:transform .25s cubic-bezier(.4,1.4,.5,1);
+  position:relative;
 }
+.photo-card:nth-child(3n+1){ transform:rotate(-2.2deg); }
+.photo-card:nth-child(3n+2){ transform:rotate(1.6deg); }
+.photo-card:nth-child(3n+3){ transform:rotate(-.5deg); }
+.photo-card:nth-child(5n){ transform:rotate(2.5deg); }
+.photo-card:nth-child(7n){ transform:rotate(-1.4deg); }
+.photo-card:hover{ transform:rotate(0deg) scale(1.04);z-index:2; }
 .photo-card img{
   width:100%;aspect-ratio:1;
   object-fit:cover;display:block;
+  border-radius:2px;
 }
-.photo-card-info{ padding:9px 11px; }
-.photo-card-date{ font-size:10px;color:var(--txt3);margin-bottom:3px; }
-.photo-card-station{ font-size:12px;font-weight:700;color:var(--txt); }
-.photo-card-mood{ font-size:11px;color:var(--txt2);margin-top:2px; }
+.photo-card-info{ padding:10px 4px 0;text-align:center; }
+.photo-card-date{
+  font-family:var(--font-hand);
+  font-size:13px;color:#7a6f5a;margin-bottom:2px;font-weight:700;
+}
+.photo-card-station{
+  font-family:var(--font-hand);
+  font-size:16px;font-weight:700;color:#2a241a;letter-spacing:0;
+}
+.photo-card-mood{
+  font-family:var(--font-hand);
+  font-size:13px;color:#5e564a;margin-top:1px;
+}
 .photo-empty{
   text-align:center;padding:48px 20px;
   background:var(--bg2);border:1px solid var(--border);
