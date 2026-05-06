@@ -607,6 +607,17 @@ a,button,label,[role="button"]{-webkit-tap-highlight-color:transparent;touch-act
   color:var(--txt2);font-size:12px;font-weight:700;
   padding:4px 14px;border-radius:20px;
 }
+/* ── 거지모드 가격 안내 노트 ── */
+.broke-note{
+  display:none;margin:8px auto 0;max-width:540px;
+  padding:10px 14px;border-radius:var(--r12);
+  background:rgba(245,166,35,.08);
+  border:1px solid rgba(245,166,35,.22);
+  color:var(--txt2);font-size:11.5px;line-height:1.55;
+  text-align:left;
+}
+.broke-note strong{ color:var(--gold);font-weight:800; }
+.broke-note.show{ display:block; }
 
 /* ── COURSE CARDS ── */
 .course-section{ margin-bottom:20px; }
@@ -1031,6 +1042,10 @@ a,button,label,[role="button"]{-webkit-tap-highlight-color:transparent;touch-act
       <div class="res-dong" id="resDong"></div>
       <div class="res-range" id="resRange">역 반경 800m 주변 장소</div>
       <div id="resMoodWrap" style="display:none"><span class="res-mood-badge" id="resMoodBadge"></span></div>
+      <div class="broke-note" id="brokeNote">
+        💸 <strong>거지모드</strong>는 <strong>저가 프랜차이즈(메가·컴포즈·빽다방 등)</strong>·<strong>분식·국밥·백반</strong>·<strong>공원·산책로·시장</strong> 위주로 큐레이션됩니다.
+        실제 가격은 매장에 따라 다를 수 있어요.
+      </div>
       <div><a class="map-link" id="mapLink" target="_blank" rel="noopener">🗺 카카오맵에서 보기</a></div>
     </div>
 
@@ -1632,6 +1647,45 @@ function pickNextRot(){
   return opts[Math.floor(Math.random()*opts.length)];
 }
 
+/* ── 거지모드 가격 휴리스틱 필터 ──
+   Kakao Local API는 메뉴 가격 데이터를 제공하지 않으므로
+   브랜드명·카테고리명 기반으로 저가 가게를 추정 큐레이션함.
+   (정확한 가격 검증 불가 — 매장별 차이 있음을 UI에 안내) */
+const BROKE_FILTERS = {
+  // 놀거리 — 무료/산책 가능 키워드
+  attractionInclude: ['공원','산책','천변','둘레길','광장','하천','강변','한강','뚝섬','서울숲','월드컵공원','올림픽공원','남산','북한산','청계천','서울로','시장','전통시장','도서관','박물관 > 시립','박물관 > 국립','광화문','경복궁'],
+  // 놀거리 — 유료 가능성 높은 곳 제외
+  attractionExclude: ['워터파크','테마파크','놀이공원','아쿠아리움','동물원','수족관','체험관','VR','실내테마','이용료','입장료','키즈카페','방탈출','클럽','당구장','노래방'],
+  // 카페 — 저가 프랜차이즈 (메인 메뉴 ~3,000원대)
+  cafeBrands: ['메가','컴포즈','빽다방','백다방','매머드','더벤티','이디야','토프레소','바나프레소','커피베이','커피마마','커피온리','하삼동','커피니','만랩','파스쿠찌','커피에반하다','쥬씨','요거프레소','드롭탑','카페베네','할리스 익스프레스'],
+  // 음식점 — 저가 카테고리 (메인 ~9,000원 이하 가능)
+  foodCategories: ['분식','김밥','도시락','백반','국밥','라면','죽','국수','냉면','쌀국수','돈가스','김치찌개','순대','족발','치킨','떡볶이','만두','곱창','보쌈','짬뽕','짜장','중식','한식','샌드위치','패스트푸드','버거','햄버거','쌈밥','비빔밥'],
+  // 음식점 — 고가 카테고리 제외
+  foodExclude: ['오마카세','코스요리','스시바','한정식','횟집','스테이크','파인다이닝','이탈리아','와인','다이닝','뷔페','셰프','프렌치'],
+};
+function filterBrokeAttraction(items){
+  const filtered = items.filter(p => {
+    const txt = (p.place_name || '') + ' ' + (p.category_name || '');
+    if (BROKE_FILTERS.attractionExclude.some(k => txt.includes(k))) return false;
+    return BROKE_FILTERS.attractionInclude.some(k => txt.includes(k));
+  });
+  return filtered.length > 0 ? filtered : items; // 결과 없으면 원본 폴백
+}
+function filterBrokeCafe(items){
+  const filtered = items.filter(p =>
+    BROKE_FILTERS.cafeBrands.some(b => (p.place_name || '').includes(b))
+  );
+  return filtered.length > 0 ? filtered : items;
+}
+function filterBrokeFood(items){
+  const filtered = items.filter(p => {
+    const cat = p.category_name || '';
+    if (BROKE_FILTERS.foodExclude.some(k => cat.includes(k))) return false;
+    return BROKE_FILTERS.foodCategories.some(k => cat.includes(k));
+  });
+  return filtered.length > 0 ? filtered : items;
+}
+
 /* ── 세션 이어하기 (다트 결과 24시간 유지) ──
    사용자가 결과 화면에서 사진 찍으러 갔다 돌아오거나, 실수로 앱을 닫아도
    24시간 안에는 첫 화면에서 "이어서 하기" 배너로 즉시 복원 가능. */
@@ -2131,6 +2185,7 @@ function showResult(){
   // 방어적 초기화 — 이전 결과 잔재 제거
   document.getElementById('courseSection').style.display='none';
   document.getElementById('resMoodWrap').style.display='none';
+  document.getElementById('brokeNote').classList.remove('show');
   document.getElementById('resGrid').style.display='none';
   document.getElementById('certSection').style.display='none';
   document.getElementById('shareSection').style.display='none';
@@ -2166,16 +2221,28 @@ async function fetchRecs(radius=800){
   const {lat,lng}=hitLatLng;
   const headers={'Authorization':`KakaoAK ${kakaoKey}`};
   const base='https://dapi.kakao.com/v2/local/search/category.json';
+  // 거지모드: 가격 휴리스틱 필터링을 위해 후보 풀을 더 크게 (size=15가 카카오 최대)
+  const isBroke = selectedMood?.id === 'broke';
+  const querySize = isBroke ? 15 : 5;
   try{
     const[at,ct,fd,ce]=await Promise.all([
-      fetch(`${base}?category_group_code=AT4&x=${lng}&y=${lat}&radius=${radius}&sort=accuracy&size=5`,{headers}).then(r=>r.json()),
-      fetch(`${base}?category_group_code=CT1&x=${lng}&y=${lat}&radius=${radius}&sort=accuracy&size=5`,{headers}).then(r=>r.json()),
-      fetch(`${base}?category_group_code=FD6&x=${lng}&y=${lat}&radius=${radius}&sort=accuracy&size=5`,{headers}).then(r=>r.json()),
-      fetch(`${base}?category_group_code=CE7&x=${lng}&y=${lat}&radius=${radius}&sort=accuracy&size=5`,{headers}).then(r=>r.json()),
+      fetch(`${base}?category_group_code=AT4&x=${lng}&y=${lat}&radius=${radius}&sort=accuracy&size=${querySize}`,{headers}).then(r=>r.json()),
+      fetch(`${base}?category_group_code=CT1&x=${lng}&y=${lat}&radius=${radius}&sort=accuracy&size=${querySize}`,{headers}).then(r=>r.json()),
+      fetch(`${base}?category_group_code=FD6&x=${lng}&y=${lat}&radius=${radius}&sort=accuracy&size=${querySize}`,{headers}).then(r=>r.json()),
+      fetch(`${base}?category_group_code=CE7&x=${lng}&y=${lat}&radius=${radius}&sort=accuracy&size=${querySize}`,{headers}).then(r=>r.json()),
     ]);
-    const attractions=[...(at.documents||[]),...(ct.documents||[])].sort((a,b)=>+a.distance-+b.distance).slice(0,4);
-    const restaurants=(fd.documents||[]).slice(0,4);
-    const cafes=(ce.documents||[]).slice(0,4);
+    let attractions=[...(at.documents||[]),...(ct.documents||[])].sort((a,b)=>+a.distance-+b.distance);
+    let restaurants=(fd.documents||[]);
+    let cafes=(ce.documents||[]);
+    // 거지모드 후처리 — 무료/저가 가능성 높은 가게로 큐레이션
+    if(isBroke){
+      attractions = filterBrokeAttraction(attractions);
+      restaurants = filterBrokeFood(restaurants);
+      cafes       = filterBrokeCafe(cafes);
+    }
+    attractions = attractions.slice(0,4);
+    restaurants = restaurants.slice(0,4);
+    cafes       = cafes.slice(0,4);
     // 결과가 전부 비었으면 반경 넓혀서 재시도
     if(radius<1500 && !attractions.length && !restaurants.length && !cafes.length){
       return fetchRecs(1500);
@@ -2220,6 +2287,8 @@ function renderCourseCards({attractions,restaurants,cafes}){
     mb.textContent=`${selectedMood.emoji} ${selectedMood.label} 코스`;
     mw.style.display='block';
   }
+  // 거지모드 가격 안내 표시
+  document.getElementById('brokeNote').classList.toggle('show', selectedMood?.id === 'broke');
 
   const names = (selectedMood && COURSE_NAMES[selectedMood.id]) || COURSE_NAMES.normal;
   const a = attractions.slice(0,3);
@@ -2645,6 +2714,7 @@ function goHome(){
   document.getElementById('localOut').style.display='none';
   document.getElementById('courseSection').style.display='none';
   document.getElementById('resMoodWrap').style.display='none';
+  document.getElementById('brokeNote').classList.remove('show');
   document.getElementById('resGrid').style.display='none';
   document.getElementById('certSection').style.display='none';
   document.getElementById('shareSection').style.display='none';
@@ -2683,6 +2753,7 @@ function resetGame(){
   document.getElementById('localOut').style.display='none';
   document.getElementById('courseSection').style.display='none';
   document.getElementById('resMoodWrap').style.display='none';
+  document.getElementById('brokeNote').classList.remove('show');
   document.getElementById('resGrid').style.display='none';
   document.getElementById('certSection').style.display='none';
   document.getElementById('shareSection').style.display='none';
