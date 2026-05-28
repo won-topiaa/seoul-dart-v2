@@ -99,6 +99,8 @@ a,button,label,[role="button"]{-webkit-tap-highlight-color:transparent;touch-act
 .screen.out{opacity:0;pointer-events:none;transform:translateY(8px) scale(.985);}
 
 /* ── HEADER ── */
+/* 톡방 화면에서는 전역 헤더 숨김 — 톡방이 자체 헤더 가지고 있어 겹침 방지 */
+body.chat-open .hdr{ display:none; }
 .hdr{position:fixed;top:0;left:0;right:0;z-index:300;
   background:rgba(253,246,240,.85);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
   border-bottom:1px solid var(--border);
@@ -903,9 +905,9 @@ a,button,label,[role="button"]{-webkit-tap-highlight-color:transparent;touch-act
 }
 .chat-input-row{
   display:flex;gap:8px;align-items:center;
-  padding:12px 14px;background:var(--bg2);
+  padding:12px 14px max(12px,calc(env(safe-area-inset-bottom) + 4px));
+  background:var(--bg2);
   border-top:1px solid var(--border);
-  position:sticky;bottom:0;
 }
 .chat-input{
   flex:1;padding:12px 16px;
@@ -2810,6 +2812,10 @@ function goBackTo(target){
 
   const screens = ['moodScreen','homeScreen','gameScreen','resultScreen','matchScreen','chatScreen'];
   if(!screens.includes(target)) target = 'moodScreen'; // 알 수 없는 target → 시작 화면
+  // 톡방 헤더 가림 토글 — 브라우저 뒤로가기 등 모든 화면 전환에서 동기화
+  document.body.classList.toggle('chat-open', target === 'chatScreen');
+  // chat 타이머는 chat 화면 떠날 때 정리
+  if(target !== 'chatScreen' && typeof stopChatTimer === 'function') stopChatTimer();
 
   const wasOnResult = !document.getElementById('resultScreen').classList.contains('out');
 
@@ -3481,10 +3487,11 @@ function openChat(roomId){
   renderChatMessages(room);
   startChatTimer(room);
 
-  // 화면 전환 — 현재 화면 기억
+  // 화면 전환 — 다른 모든 화면 숨기고 전역 헤더 가림
   const screens = ['homeScreen','gameScreen','resultScreen','matchScreen','moodScreen','stampScreen'];
   screens.forEach(id => document.getElementById(id).classList.add('out'));
   document.getElementById('chatScreen').classList.remove('out');
+  document.body.classList.add('chat-open');
   pushScreen('chatScreen');
 
   // 입력 포커스
@@ -3494,6 +3501,7 @@ function openChat(roomId){
 function closeChat(){
   stopChatTimer();
   document.getElementById('chatScreen').classList.add('out');
+  document.body.classList.remove('chat-open');
   const back = _chatOriginScreen || 'homeScreen';
   document.getElementById(back).classList.remove('out');
   pushScreen(back);
