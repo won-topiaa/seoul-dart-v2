@@ -126,6 +126,42 @@ a,button,label,[role="button"]{-webkit-tap-highlight-color:transparent;touch-act
 
 /* ── GAME SCREEN ── */
 #gameScreen{justify-content:center;}
+/* 동행 파트너 배지 (Option A에서 매칭된 경우 상단에 표시) */
+.co-throw-badge{
+  position:fixed;
+  top:max(64px,calc(env(safe-area-inset-top) + 56px));
+  left:50%;transform:translateX(-50%);
+  display:flex;align-items:center;gap:10px;
+  background:var(--bg2);border:1px solid var(--coral);
+  border-radius:20px;padding:8px 10px 8px 8px;
+  box-shadow:var(--shadow-md);z-index:7;
+  animation:roomInviteIn .4s ease;
+  max-width:calc(100vw - 40px);
+}
+.co-throw-avatar{
+  width:34px;height:34px;flex-shrink:0;border-radius:11px;
+  background:linear-gradient(145deg,var(--pink-soft),var(--coral-soft));
+  border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;font-size:18px;
+}
+.co-throw-info{ flex:1;min-width:0; }
+.co-throw-kicker{
+  font-size:9.5px;font-weight:700;color:var(--coral);letter-spacing:.6px;
+  text-transform:uppercase;font-family:var(--font-num);
+}
+.co-throw-name{
+  font-size:12px;font-weight:700;color:var(--txt);letter-spacing:-.2px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.co-throw-close{
+  width:26px;height:26px;flex-shrink:0;
+  background:transparent;border:none;cursor:pointer;
+  color:var(--txt3);font-size:13px;font-family:inherit;
+  border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .15s;
+}
+.co-throw-close:hover{ background:var(--bg3);color:var(--red); }
 #arenaWrap{
   position:relative;margin-top:54px;touch-action:none;cursor:crosshair;
   border-radius:var(--r20);overflow:hidden;
@@ -643,98 +679,260 @@ a,button,label,[role="button"]{-webkit-tap-highlight-color:transparent;touch-act
 .local-biz-desc{ font-size:12.5px;color:var(--txt2);line-height:1.55; }
 .local-biz-addr{ font-size:11.5px;color:var(--txt3);margin-top:2px; }
 
-/* ── MATES SECTION (같은 코스 메이트) ── */
-.mates-section{
-  background:var(--bg2);border:1px solid var(--border);
-  border-radius:var(--r20);padding:22px 22px 20px;
+/* ── ROOM INVITE BANNER (코스 톡방 알림) ── */
+.room-invite{
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:var(--r20);padding:22px;
   margin-bottom:16px;
-  box-shadow:var(--shadow-sm);
+  box-shadow:var(--shadow-md);
+  position:relative;overflow:hidden;
+  animation:roomInviteIn .5s cubic-bezier(.22,.61,.36,1);
 }
-.mates-hd{
-  display:flex;align-items:flex-start;justify-content:space-between;gap:12px;
-  margin-bottom:18px;
+.room-invite::before{
+  content:'';position:absolute;top:-80px;right:-40px;
+  width:240px;height:240px;
+  background:radial-gradient(circle, var(--pink-soft) 0%, transparent 65%);
+  pointer-events:none;opacity:.85;
 }
-.mates-hd-kicker{
+@keyframes roomInviteIn{
+  from{opacity:0;transform:translateY(-12px);}
+  to{opacity:1;transform:none;}
+}
+.room-invite.joined{ border-color:var(--green); }
+.room-invite.joined::before{ background:radial-gradient(circle, rgba(76,175,128,.16) 0%, transparent 65%); }
+.room-invite.room-invite-empty{
+  text-align:center;padding:32px 20px;
+  display:flex;flex-direction:column;align-items:center;gap:14px;
+  box-shadow:var(--shadow-sm);border:1px dashed var(--border2);
+}
+.room-invite.room-invite-empty::before{ display:none; }
+
+.room-invite-top{
+  display:flex;align-items:flex-start;gap:14px;
+  margin-bottom:14px;position:relative;
+}
+.room-invite-icon{
+  flex-shrink:0;
+  width:48px;height:48px;border-radius:14px;
+  background:linear-gradient(135deg,var(--pink) 0%,var(--pink-deep) 100%);
+  color:#fff;font-size:22px;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 6px 16px rgba(232,117,147,.28);
+}
+.room-invite-icon.pulse{ animation:invitePulse 1.8s ease-in-out infinite; }
+@keyframes invitePulse{
+  0%,100%{ box-shadow:0 6px 16px rgba(232,117,147,.28); }
+  50%{ box-shadow:0 6px 16px rgba(232,117,147,.28), 0 0 0 8px rgba(232,117,147,.12); }
+}
+.room-invite.joined .room-invite-icon{
+  background:linear-gradient(135deg,var(--green) 0%,#3a956b 100%);
+  box-shadow:0 6px 16px rgba(76,175,128,.28);
+}
+.room-invite-body{ flex:1;min-width:0; }
+.room-invite-kicker{
   font-size:11px;font-weight:600;letter-spacing:1.2px;
   color:var(--pink-deep);text-transform:uppercase;
   font-family:var(--font-num);margin-bottom:6px;
 }
-.mates-hd-title{
-  font-size:20px;font-weight:800;color:var(--txt);letter-spacing:-.5px;
-  margin-bottom:4px;
+.room-invite.joined .room-invite-kicker{ color:var(--green); }
+.room-invite-title{
+  font-size:18px;font-weight:800;color:var(--txt);
+  letter-spacing:-.4px;line-height:1.35;margin-bottom:6px;
 }
-.mates-hd-sub{ font-size:12.5px;color:var(--txt2);line-height:1.5;font-weight:500; }
-.mates-hd-count{
-  flex-shrink:0;
-  background:linear-gradient(135deg,var(--pink) 0%,var(--pink-deep) 100%);
-  color:#fff;font-weight:800;font-size:15px;font-family:var(--font-num);
-  width:42px;height:42px;border-radius:14px;
-  display:flex;align-items:center;justify-content:center;
-  box-shadow:0 6px 16px rgba(232,117,147,.25);
+.room-invite-desc{
+  font-size:12.5px;color:var(--txt2);line-height:1.55;font-weight:500;
 }
-.mates-list{ display:flex;flex-direction:column;gap:10px; }
-.mate-card{
-  display:flex;align-items:center;gap:12px;
-  padding:14px;background:var(--bg3);
-  border:1px solid var(--border);border-radius:var(--r16);
-  transition:all .18s ease;
+.room-invite-desc strong{ color:var(--coral-deep);font-weight:700; }
+
+.room-invite-avatars{
+  display:flex;gap:-8px;align-items:center;
+  margin:14px 0 10px;position:relative;
 }
-.mate-card:hover{ transform:translateY(-1px);box-shadow:var(--shadow-sm);border-color:var(--pink); }
-.mate-avatar{
-  width:48px;height:48px;flex-shrink:0;
+.room-avatar{
+  width:38px;height:38px;border-radius:50%;
   background:linear-gradient(145deg,var(--pink-soft),var(--coral-soft));
-  border-radius:14px;
+  border:2px solid var(--bg2);
   display:flex;align-items:center;justify-content:center;
-  font-size:26px;
-  border:1px solid var(--border);
+  font-size:18px;
+  margin-left:-8px;
+  box-shadow:0 2px 6px rgba(0,0,0,.06);
 }
-.mate-info{ flex:1;min-width:0; }
-.mate-name-row{
-  display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;margin-bottom:3px;
+.room-avatar:first-child{ margin-left:0; }
+.room-avatar.me{ background:linear-gradient(145deg,var(--coral),var(--coral-deep));color:#fff; }
+.room-invite-meta{
+  font-size:11px;color:var(--txt3);font-weight:600;
+  margin-bottom:14px;letter-spacing:-.1px;
+  font-family:var(--font-num);position:relative;
 }
-.mate-name{ font-size:14.5px;font-weight:800;color:var(--txt);letter-spacing:-.3px; }
-.mate-age{ font-size:12.5px;font-weight:700;color:var(--txt3);font-family:var(--font-num); }
-.mate-time{
-  font-size:10.5px;color:var(--txt3);font-weight:600;
-  margin-left:auto;font-family:var(--font-num);
+.room-invite-btn{
+  width:100%;padding:15px;
+  background:linear-gradient(135deg,var(--pink) 0%,var(--pink-deep) 100%);
+  color:#fff;
+  border:none;border-radius:14px;
+  font-size:14.5px;font-weight:700;letter-spacing:-.2px;
+  cursor:pointer;font-family:inherit;
+  transition:transform .15s;
+  box-shadow:0 6px 18px rgba(232,117,147,.28);
+  position:relative;
 }
-.mate-throw{
-  font-size:11.5px;color:var(--txt2);font-weight:600;
-  display:flex;align-items:center;gap:4px;margin-bottom:4px;
+.room-invite-btn:hover{ transform:translateY(-1px); }
+.room-invite-btn:active{ transform:translateY(0) scale(.98); }
+.room-invite-btn.secondary{
+  background:var(--bg2);color:var(--green);
+  border:1px solid var(--green);box-shadow:var(--shadow-sm);
 }
-.mate-throw-chip{
-  background:var(--bg2);border:1px solid var(--border);
-  border-radius:6px;padding:1px 7px;
-  font-size:10.5px;font-weight:700;color:var(--coral-deep);
+
+/* ── CHAT SCREEN (톡방) ── */
+#chatScreen{
+  justify-content:flex-start;align-items:stretch;
+  padding:0;background:var(--bg);
 }
-.mate-bio{
-  font-size:12px;color:var(--txt2);line-height:1.45;font-weight:500;
+.chat-shell{
+  width:100%;max-width:600px;
+  margin:0 auto;
+  display:flex;flex-direction:column;
+  height:100vh;height:100dvh;
+  background:var(--bg);
+  position:relative;
+}
+.chat-hd{
+  display:flex;align-items:center;gap:12px;
+  padding:max(14px,env(safe-area-inset-top)) 16px 12px;
+  background:var(--bg2);
+  border-bottom:1px solid var(--border);
+  position:sticky;top:0;z-index:5;
+}
+.chat-back{
+  width:38px;height:38px;flex-shrink:0;
+  background:transparent;border:none;cursor:pointer;
+  color:var(--txt);font-size:22px;font-family:inherit;
+  border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .15s;
+}
+.chat-back:hover{ background:var(--bg3); }
+.chat-hd-info{ flex:1;min-width:0; }
+.chat-hd-title{
+  font-size:15px;font-weight:800;color:var(--txt);letter-spacing:-.3px;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
-.mate-apply-btn{
-  flex-shrink:0;padding:10px 16px;
-  background:linear-gradient(135deg,var(--pink) 0%,var(--pink-deep) 100%);
-  color:#fff;border:none;border-radius:12px;
-  font-size:12.5px;font-weight:700;font-family:inherit;
-  cursor:pointer;letter-spacing:-.2px;
+.chat-hd-sub{
+  font-size:11.5px;color:var(--txt2);font-weight:500;margin-top:2px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.chat-hd-timer{
+  flex-shrink:0;
+  font-size:11.5px;font-weight:700;color:var(--coral);
+  background:var(--coral-soft);border:1px solid #FFD9D1;
+  padding:5px 11px;border-radius:18px;
+  font-family:var(--font-num);letter-spacing:-.1px;
+}
+.chat-members{
+  display:flex;gap:10px;overflow-x:auto;
+  padding:14px 16px;background:var(--bg2);
+  border-bottom:1px solid var(--border);
+  scrollbar-width:none;
+}
+.chat-members::-webkit-scrollbar{ display:none; }
+.chat-member{
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  flex-shrink:0;width:54px;
+}
+.chat-member-avatar{
+  width:46px;height:46px;border-radius:14px;
+  background:linear-gradient(145deg,var(--pink-soft),var(--coral-soft));
+  border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-size:24px;
+}
+.chat-member-avatar.me{
+  background:linear-gradient(135deg,var(--coral),var(--coral-deep));
+  color:#fff;
+}
+.chat-member-name{
+  font-size:11.5px;font-weight:700;color:var(--txt);
+  text-align:center;letter-spacing:-.2px;line-height:1.2;
+}
+.chat-member-meta{
+  font-size:9.5px;color:var(--txt3);font-weight:500;
+  font-family:var(--font-num);
+}
+.chat-body{
+  flex:1;overflow-y:auto;
+  padding:18px 16px;
+  display:flex;flex-direction:column;gap:14px;
+  background:var(--bg);
+}
+.chat-sys{
+  text-align:center;font-size:11.5px;color:var(--txt3);font-weight:600;
+  background:var(--bg3);padding:6px 14px;border-radius:14px;
+  align-self:center;letter-spacing:-.2px;
+}
+.chat-msg{
+  display:flex;gap:8px;align-items:flex-end;
+  max-width:88%;
+}
+.chat-msg.me{ align-self:flex-end;flex-direction:row-reverse; }
+.chat-msg-avatar{
+  width:34px;height:34px;flex-shrink:0;
+  border-radius:11px;background:var(--bg3);
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;border:1px solid var(--border);
+}
+.chat-msg-body{ display:flex;flex-direction:column;gap:3px;min-width:0; }
+.chat-msg-name{
+  font-size:11.5px;font-weight:700;color:var(--txt2);letter-spacing:-.2px;
+  padding-left:2px;
+}
+.chat-bubble{
+  background:var(--bg2);border:1px solid var(--border);
+  padding:10px 14px;border-radius:16px;
+  font-size:14px;line-height:1.5;color:var(--txt);
+  word-break:break-word;letter-spacing:-.2px;
+  box-shadow:var(--shadow-sm);
+}
+.chat-bubble.me{
+  background:linear-gradient(135deg,var(--coral) 0%,var(--coral-deep) 100%);
+  color:#fff;border-color:transparent;
+  box-shadow:var(--shadow-coral);
+}
+.chat-time{
+  font-size:10px;color:var(--txt3);font-weight:500;flex-shrink:0;
+  font-family:var(--font-num);align-self:flex-end;padding-bottom:2px;
+}
+.chat-input-row{
+  display:flex;gap:8px;align-items:center;
+  padding:12px 14px;background:var(--bg2);
+  border-top:1px solid var(--border);
+  position:sticky;bottom:0;
+}
+.chat-input{
+  flex:1;padding:12px 16px;
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:22px;font-size:14px;color:var(--txt);
+  outline:none;font-family:inherit;
+  transition:border-color .15s;
+}
+.chat-input:focus{ border-color:var(--coral);background:var(--bg2); }
+.chat-send-btn{
+  width:44px;height:44px;flex-shrink:0;
+  background:linear-gradient(135deg,var(--coral) 0%,var(--coral-deep) 100%);
+  color:#fff;border:none;border-radius:50%;
+  font-size:20px;font-weight:900;cursor:pointer;font-family:inherit;
+  display:flex;align-items:center;justify-content:center;
   transition:transform .15s;
-  box-shadow:0 4px 12px rgba(232,117,147,.22);
+  box-shadow:var(--shadow-coral);
 }
-.mate-apply-btn:hover{ transform:translateY(-1px); }
-.mate-apply-btn:active{ transform:translateY(0) scale(.96); }
-.mate-apply-btn.applied{
-  background:var(--bg2);color:var(--txt3);
-  border:1px solid var(--border);box-shadow:none;
-  cursor:default;
+.chat-send-btn:hover{ transform:translateY(-1px); }
+.chat-send-btn:active{ transform:translateY(0) scale(.92); }
+.chat-leave-btn{
+  background:transparent;border:none;cursor:pointer;
+  color:var(--txt3);font-size:12px;font-weight:600;
+  padding:10px 14px;font-family:inherit;letter-spacing:-.2px;
+  text-align:center;
 }
-.mates-empty{
-  text-align:center;padding:24px 16px;
-  background:var(--bg3);border:1px dashed var(--border2);
-  border-radius:var(--r16);
-}
-.mates-empty-ico{ font-size:36px;margin-bottom:10px; }
-.mates-empty-title{ font-size:14px;font-weight:700;color:var(--txt);margin-bottom:4px;letter-spacing:-.3px; }
-.mates-empty-sub{ font-size:12px;color:var(--txt2);line-height:1.55;font-weight:500; }
+.chat-leave-btn:hover{ color:var(--red); }
 
 /* ── MATCH SCREEN ── */
 #matchScreen{
@@ -755,23 +953,133 @@ a,button,label,[role="button"]{-webkit-tap-highlight-color:transparent;touch-act
 }
 .match-sub{ font-size:13px;color:var(--txt2);line-height:1.6;font-weight:500; }
 
-/* 필터 칩 */
-.match-filters{
-  display:flex;gap:8px;flex-wrap:wrap;padding:2px 0;
+/* 매칭 화면 탭 */
+.match-tabs{
+  display:flex;gap:6px;
+  background:var(--bg3);border:1px solid var(--border);
+  padding:4px;border-radius:14px;
 }
-.match-filter-chip{
-  background:var(--bg2);border:1px solid var(--border);
-  color:var(--txt2);font-size:12.5px;font-weight:600;letter-spacing:-.2px;
-  padding:8px 14px;border-radius:20px;cursor:pointer;
-  font-family:inherit;transition:all .15s ease;
+.match-tab{
+  flex:1;padding:11px 14px;
+  background:transparent;border:none;cursor:pointer;
+  font-size:13px;font-weight:700;color:var(--txt2);letter-spacing:-.2px;
+  border-radius:10px;font-family:inherit;
+  transition:all .18s ease;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+}
+.match-tab:hover{ color:var(--txt); }
+.match-tab.active{
+  background:var(--bg2);color:var(--coral);
   box-shadow:var(--shadow-sm);
 }
-.match-filter-chip:hover{ border-color:var(--pink);color:var(--pink-deep); }
-.match-filter-chip.active{
-  background:linear-gradient(135deg,var(--pink) 0%,var(--pink-deep) 100%);
-  color:#fff;border-color:transparent;
-  box-shadow:0 4px 12px rgba(232,117,147,.25);
+.match-tab-badge{
+  background:var(--coral-soft);color:var(--coral-deep);
+  font-size:11px;font-weight:800;font-family:var(--font-num);
+  padding:2px 7px;border-radius:10px;min-width:22px;text-align:center;
 }
+.match-tab.active .match-tab-badge{
+  background:linear-gradient(135deg,var(--coral),var(--coral-deep));color:#fff;
+}
+.match-tab-pane{ display:block; }
+
+/* 톡방 카드 (탭 1: 내 톡방) */
+.room-card{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:var(--r16);padding:16px 18px;
+  margin-bottom:10px;cursor:pointer;
+  box-shadow:var(--shadow-sm);
+  transition:all .18s ease;
+}
+.room-card:hover{ transform:translateY(-1px);box-shadow:var(--shadow-md);border-color:var(--pink); }
+.room-card.joined{ border-color:var(--green); }
+.room-card-top{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  margin-bottom:6px;
+}
+.room-card-title{
+  font-size:15px;font-weight:800;color:var(--txt);letter-spacing:-.3px;
+  flex:1;min-width:0;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.room-card-status{
+  font-size:10.5px;font-weight:700;letter-spacing:.3px;
+  background:var(--coral-soft);color:var(--coral-deep);
+  padding:3px 9px;border-radius:10px;flex-shrink:0;font-family:var(--font-num);
+}
+.room-card.joined .room-card-status{ background:rgba(76,175,128,.14);color:var(--green); }
+.room-card-stops{
+  font-size:12px;color:var(--txt2);font-weight:500;
+  margin-bottom:12px;letter-spacing:-.2px;
+}
+.room-card-bottom{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+}
+.room-card-avatars{ display:flex;align-items:center; }
+.room-card-avatars .room-avatar{ width:30px;height:30px;font-size:14px;margin-left:-6px;border-width:2px; }
+.room-card-meta{
+  font-size:11px;color:var(--txt3);font-weight:600;
+  font-family:var(--font-num);
+}
+
+/* 로비 카드 (탭 2: 같이 던질 사람) */
+.lobby-note{
+  font-size:12.5px;color:var(--txt2);font-weight:500;
+  padding:10px 14px;margin-bottom:10px;
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:12px;
+}
+.lobby-note strong{ color:var(--coral);font-weight:700; }
+.lobby-card{
+  display:flex;align-items:center;gap:12px;
+  padding:14px;background:var(--bg2);
+  border:1px solid var(--border);border-radius:var(--r16);
+  margin-bottom:10px;
+  box-shadow:var(--shadow-sm);
+  transition:all .15s ease;
+}
+.lobby-card:hover{ transform:translateY(-1px);box-shadow:var(--shadow-md); }
+.lobby-avatar{
+  width:52px;height:52px;flex-shrink:0;border-radius:16px;
+  background:linear-gradient(145deg,var(--pink-soft),var(--coral-soft));
+  border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;font-size:28px;
+}
+.lobby-info{ flex:1;min-width:0; }
+.lobby-name-row{ display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;margin-bottom:5px; }
+.lobby-name{ font-size:14.5px;font-weight:800;color:var(--txt);letter-spacing:-.3px; }
+.lobby-age{ font-size:12.5px;font-weight:700;color:var(--txt3);font-family:var(--font-num); }
+.lobby-time{
+  margin-left:auto;font-size:10.5px;color:var(--txt3);
+  font-weight:600;font-family:var(--font-num);
+}
+.lobby-chips{ display:flex;gap:5px;flex-wrap:wrap;margin-bottom:5px; }
+.lobby-bio{
+  font-size:11.5px;color:var(--txt2);line-height:1.45;font-weight:500;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.lobby-btn{
+  flex-shrink:0;padding:12px 14px;
+  background:linear-gradient(135deg,var(--coral) 0%,var(--coral-deep) 100%);
+  color:#fff;border:none;border-radius:12px;
+  font-size:12px;font-weight:800;font-family:inherit;letter-spacing:-.2px;
+  cursor:pointer;line-height:1.25;text-align:center;
+  transition:transform .15s;
+  box-shadow:var(--shadow-coral);
+}
+.lobby-btn:hover{ transform:translateY(-1px); }
+.lobby-btn:active{ transform:translateY(0) scale(.94); }
+
+/* Lobby Toast */
+.lobby-toast{
+  position:fixed;bottom:32px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:var(--bg-dark);color:#fff;
+  padding:14px 22px;border-radius:14px;
+  font-size:13.5px;font-weight:600;letter-spacing:-.2px;
+  box-shadow:0 12px 32px rgba(0,0,0,.25);
+  opacity:0;pointer-events:none;transition:all .25s ease;
+  z-index:600;max-width:90vw;text-align:center;
+}
+.lobby-toast.show{ opacity:1;transform:translateX(-50%) translateY(0); }
 
 /* 매칭 피드 */
 .match-feed{ display:flex;flex-direction:column;gap:10px; }
@@ -1630,6 +1938,7 @@ a,button,label,[role="button"]{-webkit-tap-highlight-color:transparent;touch-act
 
 <!-- GAME SCREEN -->
 <div class="screen out" id="gameScreen">
+  <div id="coThrowBadge" class="co-throw-badge" style="display:none"></div>
   <div id="arenaWrap">
     <svg id="seoulSvg" xmlns="http://www.w3.org/2000/svg"></svg>
     <canvas id="curtainCvs"></canvas>
@@ -1686,23 +1995,8 @@ a,button,label,[role="button"]{-webkit-tap-highlight-color:transparent;touch-act
 
     <div id="localOut" style="display:none" class="local-out-wrap"></div>
 
-    <!-- 같은 코스 메이트 (자동 매칭) -->
-    <div id="matesSection" style="display:none" class="mates-section">
-      <div class="mates-hd">
-        <div>
-          <div class="mates-hd-kicker">✦ 오늘의 매칭</div>
-          <div class="mates-hd-title" id="matesTitle">같은 코스 뽑은 사람</div>
-          <div class="mates-hd-sub" id="matesSub"></div>
-        </div>
-        <div class="mates-hd-count" id="matesCount">0</div>
-      </div>
-      <div id="matesList" class="mates-list"></div>
-      <div id="matesEmpty" class="mates-empty" style="display:none">
-        <div class="mates-empty-ico">🎯</div>
-        <div class="mates-empty-title">아직 이 코스를 뽑은 사람이 없어요</div>
-        <div class="mates-empty-sub">매칭 풀에 등록됐어요 — 같은 코스를 뽑은 사람이 나타나면 알려드릴게요</div>
-      </div>
-    </div>
+    <!-- 톡방 초대 배너 (코스 겹치는 사람들과 자동 매칭) -->
+    <div id="matesSection" style="display:none"></div>
 
     <!-- 방문 인증 섹션 (dart 모드 전용) -->
     <div id="certSection" style="display:none" class="cert-section">
@@ -1754,20 +2048,49 @@ a,button,label,[role="button"]{-webkit-tap-highlight-color:transparent;touch-act
   </div>
 </div>
 
-<!-- MATCH SCREEN — 오늘의 매칭 피드 -->
+<!-- MATCH SCREEN — 내 톡방 + 같이 던질 사람 -->
 <div class="screen out" id="matchScreen">
   <div class="match-inner">
     <div class="match-hd">
-      <p class="match-kicker">✦ 오늘의 매칭</p>
-      <h2 class="match-title">같은 코스 뽑은 사람들</h2>
-      <p class="match-sub">다트로 뽑힌 동네 · 기분이 비슷한 사람이 자동으로 모입니다.<br><span style="color:var(--txt3);font-size:11.5px">※ 데모 — 표시되는 프로필은 예시입니다</span></p>
+      <p class="match-kicker">✦ 매칭 센터</p>
+      <h2 class="match-title">코스로 만나는 동행</h2>
+      <p class="match-sub">코스가 겹치면 자동으로 톡방이 만들어져요. 같은 기분 사람과 함께 다트를 던질 수도 있어요.</p>
     </div>
-    <div class="match-filters" id="matchFilters"></div>
-    <div id="matchFeed" class="match-feed"></div>
+    <div class="match-tabs">
+      <button class="match-tab active" data-tab="rooms" onclick="switchMatchTab('rooms')">
+        💬 내 톡방 <span class="match-tab-badge" id="tabRoomsCount">0</span>
+      </button>
+      <button class="match-tab" data-tab="lobby" onclick="switchMatchTab('lobby')">
+        🎯 같이 던질 사람
+      </button>
+    </div>
+    <div id="matchTabRooms" class="match-tab-pane"></div>
+    <div id="matchTabLobby" class="match-tab-pane" style="display:none"></div>
     <div class="match-foot">
       <button class="match-back-btn" onclick="closeMatch()">← 홈으로</button>
-      <div class="match-foot-count" id="matchFootCount">0명 활동 중</div>
+      <div class="match-foot-count" id="matchFootCount"></div>
     </div>
+  </div>
+</div>
+
+<!-- CHAT SCREEN — 코스 톡방 -->
+<div class="screen out" id="chatScreen">
+  <div class="chat-shell">
+    <header class="chat-hd">
+      <button class="chat-back" onclick="closeChat()" aria-label="뒤로">←</button>
+      <div class="chat-hd-info">
+        <div class="chat-hd-title" id="chatTitle">톡방</div>
+        <div class="chat-hd-sub" id="chatSub"></div>
+      </div>
+      <div class="chat-hd-timer" id="chatTimer"></div>
+    </header>
+    <div class="chat-members" id="chatMembers"></div>
+    <div class="chat-body" id="chatBody"></div>
+    <form class="chat-input-row" id="chatForm" onsubmit="sendChatMsg(event)">
+      <input class="chat-input" id="chatInput" type="text" placeholder="메시지 보내기..." autocomplete="off" maxlength="200" />
+      <button class="chat-send-btn" type="submit" aria-label="보내기">↑</button>
+    </form>
+    <button class="chat-leave-btn" onclick="confirmLeaveRoom()">톡방 나가기</button>
   </div>
 </div>
 
@@ -2485,7 +2808,7 @@ function goBackTo(target){
   // 3) target이 stampScreen이면 스탬프만 닫고 메인 화면은 그대로
   if(target === 'stampScreen') return;
 
-  const screens = ['moodScreen','homeScreen','gameScreen','resultScreen','matchScreen'];
+  const screens = ['moodScreen','homeScreen','gameScreen','resultScreen','matchScreen','chatScreen'];
   if(!screens.includes(target)) target = 'moodScreen'; // 알 수 없는 target → 시작 화면
 
   const wasOnResult = !document.getElementById('resultScreen').classList.contains('out');
@@ -2919,117 +3242,360 @@ function showResult(){
 }
 
 /* ══════════════════════════════════════════
-   같은 코스 메이트 매칭 — 다트 결과에 따라 자동 필터
+   톡방 (Room) 시스템
+   - 코스 겹치는 사람들 자동 그룹핑 (1+ stop 겹침 필수)
+   - 최대 4명 (본인 포함)
+   - 4시간 후 만료
+   - localStorage에 저장. 입장(joined) 여부 별도 관리
 ══════════════════════════════════════════ */
-function getMatesFor(guName, moodId){
-  // 매칭 점수: 같은 구 +2, 같은 기분 +2, 인접 기분 +1
-  const moodGroups = {
-    food: ['foodie','broke'],
-    chill: ['walk','cafe','sad','solo','normal'],
-    hype: ['happy','active'],
-    artsy: ['culture','date'],
-  };
-  const groupOf = (m) => Object.keys(moodGroups).find(k => moodGroups[k].includes(m));
-  const myGroup = moodId && groupOf(moodId);
+const ROOM_TTL_MS = 4 * 60 * 60 * 1000;     // 4시간
+const ROOM_MAX_MEMBERS = 4;                  // 본인 포함 최대
 
-  return MATCH_PROFILES.map(p => {
-    let score = 0;
-    if(p.matchGu === guName) score += 2;
-    if(moodId && p.mood === moodId) score += 2;
-    else if(myGroup && groupOf(p.mood) === myGroup) score += 1;
-    return {p, score};
-  })
-  .filter(x => x.score > 0)
-  .sort((a,b) => b.score - a.score || a.p.thrownMin - b.p.thrownMin)
-  .slice(0, 6)
-  .map(x => x.p);
+/* 두 코스의 겹침 점수: 구 +3, 기분 +2, stop당 +1 */
+function courseOverlapScore(userCourse, profile){
+  let s = 0;
+  if(userCourse.gu === profile.matchGu) s += 3;
+  if(userCourse.mood && userCourse.mood === profile.mood) s += 2;
+  const shared = userCourse.topStops.filter(x => profile.topStops.includes(x));
+  s += shared.length;
+  return {score:s, sharedStops:shared};
 }
 
+/* 모든 저장된 방 로드 + 만료된 방 정리 */
+function loadRooms(){
+  const all = lsGet('sdt_rooms', []);
+  const now = Date.now();
+  const alive = all.filter(r => (r.createdAt + ROOM_TTL_MS) > now);
+  if(alive.length !== all.length) localStorage.setItem('sdt_rooms', JSON.stringify(alive));
+  return alive;
+}
+function saveRooms(rooms){ localStorage.setItem('sdt_rooms', JSON.stringify(rooms)); }
+
+/* 현재 코스로 톡방 찾거나 생성 */
+function findOrCreateRoom(userCourse){
+  if(!userCourse.gu) return null;
+  const rooms = loadRooms();
+  // 코스 키 — 같은 구+기분이면 같은 방. 동행 파트너 있으면 키에 포함시켜 별도 방.
+  const partnerSuffix = window._coThrowPartner ? `::co_${window._coThrowPartner.name}` : '';
+  const courseKey = `${userCourse.gu}::${userCourse.mood||'any'}${partnerSuffix}`;
+  let room = rooms.find(r => r.courseKey === courseKey);
+
+  if(room) return room;
+
+  let candidates;
+  if(window._coThrowPartner){
+    // 동행 파트너만 멤버로 (옵션 A로 매칭된 케이스)
+    const partnerProfile = MATCH_PROFILES.find(p => p.name === window._coThrowPartner.name);
+    if(partnerProfile){
+      const {sharedStops} = courseOverlapScore(userCourse, partnerProfile);
+      candidates = [{p:partnerProfile, score:99, sharedStops: sharedStops.length ? sharedStops : userCourse.topStops.slice(0,2)}];
+    }
+  }
+
+  if(!candidates){
+    // 일반: 겹침 점수 ≥3, 1+ stop 겹침 필수, 상위 3명 (본인 포함 4명)
+    candidates = MATCH_PROFILES.map(p => {
+      const {score, sharedStops} = courseOverlapScore(userCourse, p);
+      return {p, score, sharedStops};
+    })
+    .filter(x => x.score >= 3 && x.sharedStops.length >= 1)
+    .sort((a,b) => b.score - a.score || a.p.thrownMin - b.p.thrownMin)
+    .slice(0, ROOM_MAX_MEMBERS - 1);
+  }
+
+  if(candidates.length === 0) return null;
+
+  room = {
+    id: `room_${Date.now()}_${Math.floor(Math.random()*1000)}`,
+    courseKey,
+    courseGu: userCourse.gu,
+    courseMood: userCourse.mood,
+    courseMoodLabel: userCourse.moodLabel,
+    courseMoodEmoji: userCourse.moodEmoji,
+    sharedStops: candidates[0].sharedStops, // 대표 stop
+    createdAt: Date.now(),
+    isCoThrow: !!window._coThrowPartner,
+    members: candidates.map(c => ({
+      name: c.p.name, age: c.p.age, emoji: c.p.emoji,
+      displayGu: c.p.displayGu, moodLabel: c.p.moodLabel,
+    })),
+    joined: false,
+    messages: [],
+  };
+  rooms.push(room);
+  saveRooms(rooms);
+  return room;
+}
+
+function joinRoom(roomId){
+  const rooms = loadRooms();
+  const room = rooms.find(r => r.id === roomId);
+  if(!room) return;
+  room.joined = true;
+  // 첫 입장 시 봇 메시지 시드
+  if(room.messages.length === 0){
+    const seeds = seedRoomMessages(room);
+    room.messages = seeds;
+  }
+  saveRooms(rooms);
+  return room;
+}
+function leaveRoom(roomId){
+  const rooms = loadRooms();
+  const room = rooms.find(r => r.id === roomId);
+  if(!room) return;
+  room.joined = false;
+  saveRooms(rooms);
+}
+
+/* 데모 시드 메시지 — 방마다 처음 입장 시 1~2개 추가 */
+function seedRoomMessages(room){
+  const m1 = room.members[0];
+  const m2 = room.members[1];
+  const moodTxt = room.courseMoodLabel || '오늘 코스';
+  const stopTxt = (room.sharedStops||[]).slice(0,2).join('·') || '비슷한 코스';
+  const seeds = [
+    {who:'system', text:`💬 ${room.courseGu} · ${moodTxt} 톡방이 만들어졌어요`, ts:room.createdAt},
+    {who:'system', text:`겹친 코스: ${stopTxt}`, ts:room.createdAt+1000},
+  ];
+  if(m1) seeds.push({who:m1.name, emoji:m1.emoji, text:`안녕하세요~ ${room.courseGu} 어디부터 가실 분 있나요?`, ts:room.createdAt+30000});
+  if(m2) seeds.push({who:m2.name, emoji:m2.emoji, text:`저는 ${room.sharedStops?.[0]||'카페'}부터 시작하려고요!`, ts:room.createdAt+90000});
+  return seeds;
+}
+
+/* 코스 키로 톡방 존재 여부 (입장 여부와 무관) */
+function getCurrentRoom(){
+  const uc = getUserCourse();
+  if(!uc.gu) return null;
+  const courseKey = `${uc.gu}::${uc.mood||'any'}`;
+  return loadRooms().find(r => r.courseKey === courseKey) || null;
+}
+
+/* 결과 화면 진입 시 호출 — 톡방 초대 배너 렌더링 */
 function renderMatesSection(guName, moodId){
   const section = document.getElementById('matesSection');
-  const listEl  = document.getElementById('matesList');
-  const emptyEl = document.getElementById('matesEmpty');
-  const countEl = document.getElementById('matesCount');
-  const subEl   = document.getElementById('matesSub');
+  const userCourse = getUserCourse();
+  const room = findOrCreateRoom(userCourse);
 
-  const mates = getMatesFor(guName, moodId);
-  countEl.textContent = mates.length;
-  const moodTxt = (moodId && MOODS.find(m=>m.id===moodId)?.label) || '오늘';
-  subEl.textContent = `${guName}에서 ${moodTxt} 코스로 던진 사람들`;
-
-  if(mates.length === 0){
-    listEl.innerHTML = '';
-    emptyEl.style.display = 'block';
-  } else {
-    emptyEl.style.display = 'none';
-    listEl.innerHTML = mates.map((p, i) => {
-      const moodMatch = moodId && p.mood === moodId;
-      const guMatch   = p.matchGu === guName;
-      const tag = moodMatch && guMatch ? '완벽 매칭'
-               : guMatch ? '같은 동네'
-               : moodMatch ? '같은 기분'
-               : '비슷한 코스';
-      return `
-        <div class="mate-card">
-          <div class="mate-avatar">${p.emoji}</div>
-          <div class="mate-info">
-            <div class="mate-name-row">
-              <span class="mate-name">${escHtml(p.name)}</span>
-              <span class="mate-age">${p.age}</span>
-              <span class="mate-time">${p.thrownMin}분 전 던짐</span>
-            </div>
-            <div class="mate-throw">
-              <span class="mate-throw-chip">${escHtml(tag)}</span>
-              <span>${p.moodEmoji} ${escHtml(p.moodLabel)} · ${escHtml(p.displayGu)}</span>
-            </div>
-            <div class="mate-bio">${escHtml(p.bio)}</div>
-          </div>
-          <button class="mate-apply-btn" data-mate-idx="${i}" onclick="applyToMate(${i})">동행 신청</button>
-        </div>`;
-    }).join('');
-    // 매칭된 메이트를 매핑 — 신청 시 사용
-    _currentMates = mates;
+  if(!room){
+    section.innerHTML = `
+      <div class="room-invite room-invite-empty">
+        <div class="room-invite-icon">🎯</div>
+        <div class="room-invite-body">
+          <div class="room-invite-title">이 코스를 뽑은 사람이 아직 없어요</div>
+          <div class="room-invite-desc">매칭 풀에 등록됐어요 — 같은 코스 사람이 나타나면 알려드릴게요</div>
+        </div>
+      </div>`;
+    section.style.display = 'block';
+    return;
   }
+  renderRoomInvite(room);
   section.style.display = 'block';
 }
 
-let _currentMates = [];
-function applyToMate(idx){
-  const profile = _currentMates[idx];
-  if(!profile) return;
-  // 버튼 상태 변경
-  const btn = document.querySelector(`.mate-apply-btn[data-mate-idx="${idx}"]`);
-  if(btn){
-    btn.textContent = '신청 완료 ✓';
-    btn.classList.add('applied');
-    btn.disabled = true;
+function renderRoomInvite(room){
+  const section = document.getElementById('matesSection');
+  const memberCount = room.members.length + 1; // 본인 포함
+  const stopTxt = (room.sharedStops||[]).slice(0,3).join(' · ');
+  const moodTxt = room.courseMoodLabel || '오늘 코스';
+  const moodEmj = room.courseMoodEmoji || '🎯';
+
+  if(room.joined){
+    section.innerHTML = `
+      <div class="room-invite joined">
+        <div class="room-invite-top">
+          <div class="room-invite-icon">✓</div>
+          <div class="room-invite-body">
+            <div class="room-invite-kicker">입장한 톡방</div>
+            <div class="room-invite-title">${escHtml(room.courseGu)} · ${moodEmj} ${escHtml(moodTxt)}</div>
+            <div class="room-invite-desc">${memberCount}명 · ${stopTxt}</div>
+          </div>
+        </div>
+        <div class="room-invite-avatars">
+          ${renderMemberAvatars(room)}
+        </div>
+        <button class="room-invite-btn secondary" onclick="openChat('${room.id}')">톡방 열기 →</button>
+      </div>`;
+  } else {
+    section.innerHTML = `
+      <div class="room-invite">
+        <div class="room-invite-top">
+          <div class="room-invite-icon pulse">💬</div>
+          <div class="room-invite-body">
+            <div class="room-invite-kicker">✦ 새 톡방 알림</div>
+            <div class="room-invite-title">코스가 겹치는 사람들끼리<br>모인 톡방이 만들어졌어요!</div>
+            <div class="room-invite-desc">${escHtml(room.courseGu)} · ${moodEmj} ${escHtml(moodTxt)} · 겹친 코스 <strong>${escHtml(stopTxt)}</strong></div>
+          </div>
+        </div>
+        <div class="room-invite-avatars">
+          ${renderMemberAvatars(room)}
+        </div>
+        <div class="room-invite-meta">${memberCount}명 · 4시간 유지 · 최대 4명</div>
+        <button class="room-invite-btn" onclick="enterRoom('${room.id}')">입장하기 →</button>
+      </div>`;
   }
-  // 60% 확률로 매칭 성공
-  setTimeout(() => {
-    if(Math.random() < 0.6){
-      // 매치 성공 모달 재활용 — 컨텍스트만 코스 기반으로 변경
-      showCourseMatchSuccess(profile);
-    }
-  }, 800);
 }
 
-function showCourseMatchSuccess(profile){
-  _matchedProfile = profile;
-  document.getElementById('matchModalName').textContent =
-    `${profile.name} (${profile.age}) · ${profile.displayGu}`;
-  document.getElementById('matchModalDesc').textContent =
-    `${profile.name}님도 같은 코스를 뽑았어요! 같이 다녀오시겠어요?`;
-  const guPick = hitDist?.n || profile.matchGu;
-  const moodLbl = (selectedMood?.label) || profile.moodLabel;
-  const moodEmj = (selectedMood?.emoji) || profile.moodEmoji;
-  document.getElementById('matchModalSuggest').innerHTML = `
-    <div class="match-modal-suggest-hd">공유 코스</div>
-    <strong style="color:var(--pink-deep)">${escHtml(guPick)}</strong>에서 <strong style="color:var(--coral)">${moodEmj} ${escHtml(moodLbl)}</strong> 모드 — 두 분이 동시에 뽑은 코스입니다`;
-  // 카톡 오픈채팅 톤으로 버튼 카피 변경
-  const btns = document.querySelectorAll('#matchSuccessModal .match-modal-btn');
-  if(btns[0]) btns[0].textContent = '나중에';
-  if(btns[1]) btns[1].textContent = '카톡 오픈채팅 열기 💬';
-  document.getElementById('matchSuccessModal').classList.add('show');
+function renderMemberAvatars(room){
+  const me = `<div class="room-avatar me" title="나">🧑</div>`;
+  const others = room.members.map(m => `<div class="room-avatar" title="${escHtml(m.name)} (${m.age})">${m.emoji}</div>`).join('');
+  return me + others;
+}
+
+function enterRoom(roomId){
+  joinRoom(roomId);
+  openChat(roomId);
+}
+
+/* ── 톡방 화면 (Chat) ── */
+let _currentRoomId = null;
+let _chatTimerHandle = null;
+let _chatOriginScreen = 'homeScreen';
+
+function openChat(roomId){
+  const room = loadRooms().find(r => r.id === roomId);
+  if(!room) return;
+  _currentRoomId = roomId;
+  // 진입 직전 화면 기억 — 닫을 때 그 화면으로 복귀
+  if(!document.getElementById('resultScreen').classList.contains('out')) _chatOriginScreen = 'resultScreen';
+  else if(!document.getElementById('matchScreen').classList.contains('out')) _chatOriginScreen = 'matchScreen';
+  else _chatOriginScreen = 'homeScreen';
+
+  // 헤더
+  document.getElementById('chatTitle').textContent =
+    `${room.courseGu} · ${room.courseMoodEmoji||'🎯'} ${room.courseMoodLabel||'코스'}`;
+  document.getElementById('chatSub').textContent =
+    `${room.members.length+1}명 · 겹친 코스 ${(room.sharedStops||[]).slice(0,2).join('·')}`;
+
+  // 멤버 행
+  document.getElementById('chatMembers').innerHTML = `
+    <div class="chat-member"><div class="chat-member-avatar me">🧑</div><div class="chat-member-name">나</div></div>
+    ${room.members.map(m => `
+      <div class="chat-member">
+        <div class="chat-member-avatar">${m.emoji}</div>
+        <div class="chat-member-name">${escHtml(m.name)}<br><span class="chat-member-meta">${m.age}·${escHtml(m.displayGu)}</span></div>
+      </div>
+    `).join('')}
+  `;
+
+  renderChatMessages(room);
+  startChatTimer(room);
+
+  // 화면 전환 — 현재 화면 기억
+  const screens = ['homeScreen','gameScreen','resultScreen','matchScreen','moodScreen','stampScreen'];
+  screens.forEach(id => document.getElementById(id).classList.add('out'));
+  document.getElementById('chatScreen').classList.remove('out');
+  pushScreen('chatScreen');
+
+  // 입력 포커스
+  setTimeout(() => document.getElementById('chatInput')?.focus(), 200);
+}
+
+function closeChat(){
+  stopChatTimer();
+  document.getElementById('chatScreen').classList.add('out');
+  const back = _chatOriginScreen || 'homeScreen';
+  document.getElementById(back).classList.remove('out');
+  pushScreen(back);
+  if(back === 'resultScreen'){
+    renderMatesSection(hitDist?.n, selectedMood?.id);
+  } else if(back === 'matchScreen'){
+    renderRoomsTab();
+  }
+}
+
+function renderChatMessages(room){
+  const body = document.getElementById('chatBody');
+  body.innerHTML = (room.messages||[]).map(m => renderChatBubble(m, room)).join('');
+  body.scrollTop = body.scrollHeight;
+}
+function renderChatBubble(m, room){
+  if(m.who === 'system'){
+    return `<div class="chat-sys">${escHtml(m.text)}</div>`;
+  }
+  const isMe = m.who === '나';
+  const mem = room.members.find(x => x.name === m.who);
+  const emoji = m.emoji || mem?.emoji || '👤';
+  const time = new Date(m.ts).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit',hour12:false});
+  if(isMe){
+    return `
+      <div class="chat-msg me">
+        <div class="chat-bubble me">${escHtml(m.text)}</div>
+        <div class="chat-time">${time}</div>
+      </div>`;
+  }
+  return `
+    <div class="chat-msg">
+      <div class="chat-msg-avatar">${emoji}</div>
+      <div class="chat-msg-body">
+        <div class="chat-msg-name">${escHtml(m.who)}</div>
+        <div class="chat-bubble">${escHtml(m.text)}</div>
+      </div>
+      <div class="chat-time">${time}</div>
+    </div>`;
+}
+
+function sendChatMsg(e){
+  e?.preventDefault();
+  const input = document.getElementById('chatInput');
+  const text = (input.value || '').trim();
+  if(!text || !_currentRoomId) return;
+  const rooms = loadRooms();
+  const room = rooms.find(r => r.id === _currentRoomId);
+  if(!room) return;
+  room.messages.push({who:'나', text, ts:Date.now()});
+  saveRooms(rooms);
+  input.value = '';
+  renderChatMessages(room);
+  // 데모: 랜덤한 멤버가 30% 확률로 답장
+  setTimeout(() => {
+    if(Math.random() < 0.45 && room.members.length){
+      const m = room.members[Math.floor(Math.random()*room.members.length)];
+      const replies = [
+        '오 좋아요! 그쪽 가요',
+        '저도 그 동네 가는 길이에요',
+        '몇 시쯤 만나면 좋을까요?',
+        '카페부터 들렀다 가는 거 어때요?',
+        '저는 30분 뒤 도착해요',
+        '오 마침 저도 그 생각했어요 ㅋㅋ',
+        '같이 가요!',
+      ];
+      const reply = replies[Math.floor(Math.random()*replies.length)];
+      const rs = loadRooms();
+      const r2 = rs.find(x => x.id === _currentRoomId);
+      if(!r2) return;
+      r2.messages.push({who:m.name, emoji:m.emoji, text:reply, ts:Date.now()});
+      saveRooms(rs);
+      if(_currentRoomId === r2.id) renderChatMessages(r2);
+    }
+  }, 1200 + Math.random()*1500);
+}
+
+function confirmLeaveRoom(){
+  if(!_currentRoomId) return;
+  if(!confirm('톡방에서 나가시겠어요? 다시 입장할 수 있어요.')) return;
+  leaveRoom(_currentRoomId);
+  closeChat();
+}
+
+function startChatTimer(room){
+  stopChatTimer();
+  const tick = () => {
+    const left = (room.createdAt + ROOM_TTL_MS) - Date.now();
+    if(left <= 0){
+      document.getElementById('chatTimer').textContent = '⏱ 만료됨';
+      stopChatTimer();
+      return;
+    }
+    const h = Math.floor(left / 3600000);
+    const m = Math.floor((left % 3600000) / 60000);
+    document.getElementById('chatTimer').textContent = `⏱ ${h}시간 ${m}분 남음`;
+  };
+  tick();
+  _chatTimerHandle = setInterval(tick, 30000);
+}
+function stopChatTimer(){
+  if(_chatTimerHandle){ clearInterval(_chatTimerHandle); _chatTimerHandle = null; }
 }
 
 /* ── KAKAO LOCAL API ── */
@@ -3541,7 +4107,10 @@ function goHome(){
   document.getElementById('resGrid').style.display='none';
   document.getElementById('certSection').style.display='none';
   document.getElementById('shareSection').style.display='none';
+  document.getElementById('matesSection').style.display='none';
   resetCertSection();
+  // 동행 파트너 클리어 (Option A 세션 종료)
+  if(window._coThrowPartner){ window._coThrowPartner = null; document.getElementById('coThrowBadge').style.display='none'; }
   // 기분 선택으로 돌아가기 (초기화)
   selectedMood=null;
   document.querySelectorAll('.mood-chip').forEach(c=>c.classList.remove('selected'));
@@ -3562,6 +4131,25 @@ function startGame(mode){
   document.getElementById('homeScreen').classList.add('out');
   document.getElementById('gameScreen').classList.remove('out');
   pushScreen('gameScreen');
+  // 동행 파트너 배지 (Option A에서 매칭된 경우)
+  const badge = document.getElementById('coThrowBadge');
+  if(window._coThrowPartner){
+    const p = window._coThrowPartner;
+    badge.innerHTML = `
+      <div class="co-throw-avatar">${p.emoji}</div>
+      <div class="co-throw-info">
+        <div class="co-throw-kicker">함께 던지는 중</div>
+        <div class="co-throw-name">${escHtml(p.name)} (${p.age}) · ${escHtml(p.displayGu)}</div>
+      </div>
+      <button class="co-throw-close" onclick="cancelCoThrow()" aria-label="동행 취소">✕</button>`;
+    badge.style.display = 'flex';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+function cancelCoThrow(){
+  window._coThrowPartner = null;
+  document.getElementById('coThrowBadge').style.display = 'none';
 }
 
 /* ══════════════════════════════════════════
@@ -3569,68 +4157,94 @@ function startGame(mode){
 ══════════════════════════════════════════ */
 /* ══════════════════════════════════════════
    매칭 풀 — "오늘 다트를 던진 사람들"
-   각 프로필은 자기가 뽑은 코스(matchGu + mood)를 가지고 있어
-   같은 구·기분이 나온 유저끼리 자동 매칭됨.
+   각 프로필은 자기가 뽑은 코스(matchGu + mood + topStops)를 가지고 있어
+   톡방 매칭은 (구 +3, 기분 +2, 겹친 stop +1)로 점수 계산.
    thrownMin: 몇 분 전에 던졌는지 (실시간성 연출용)
+   topStops: 가고 싶은 stop 카테고리 3개 — 코스 겹침 판단 핵심
 ══════════════════════════════════════════ */
 const MATCH_PROFILES = [
-  // 강남·서초 (강남 트래픽 많은 곳)
-  {name:'지우',   age:26, matchGu:'강남구',   displayGu:'강남',   mood:'cafe',    moodEmoji:'☕', moodLabel:'카페 호핑', emoji:'🧋', tags:['카페투어','독립서점','감성사진'], bio:'강남 신상 카페 정복 중. 같이 다닐 분!',          thrownMin:8},
-  {name:'정환',   age:32, matchGu:'강남구',   displayGu:'압구정',  mood:'date',    moodEmoji:'💕', moodLabel:'로맨틱',    emoji:'🍸', tags:['오마카세','루프탑','와인바'],     bio:'분위기 좋은 데이트 코스 좋아함.',                thrownMin:22},
-  {name:'민서',   age:27, matchGu:'강남구',   displayGu:'역삼',   mood:'foodie',  moodEmoji:'🍽', moodLabel:'탐식',      emoji:'🥩', tags:['스테이크','와인','파스타'],       bio:'역삼 회식 말고 진짜 맛집 다니고 싶어요.',          thrownMin:35},
-  {name:'유진',   age:28, matchGu:'서초구',   displayGu:'양재',   mood:'walk',    moodEmoji:'🚶', moodLabel:'산책',      emoji:'🌳', tags:['양재천','시민의숲','자전거'],     bio:'양재천 산책 메이트 구해요.',                    thrownMin:14},
+  // 강남·서초
+  {name:'지우',   age:26, matchGu:'강남구',   displayGu:'강남',   mood:'cafe',    moodEmoji:'☕', moodLabel:'카페 호핑', emoji:'🧋', tags:['카페투어','독립서점','감성사진'], topStops:['카페','베이커리','독립서점'], bio:'강남 신상 카페 정복 중. 같이 다닐 분!',          thrownMin:8},
+  {name:'정환',   age:32, matchGu:'강남구',   displayGu:'압구정',  mood:'date',    moodEmoji:'💕', moodLabel:'로맨틱',    emoji:'🍸', tags:['오마카세','루프탑','와인바'],     topStops:['루프탑','와인바','뷰맛집'],   bio:'분위기 좋은 데이트 코스 좋아함.',                thrownMin:22},
+  {name:'민서',   age:27, matchGu:'강남구',   displayGu:'역삼',   mood:'foodie',  moodEmoji:'🍽', moodLabel:'탐식',      emoji:'🥩', tags:['스테이크','와인','파스타'],       topStops:['맛집','와인바','노포'],       bio:'역삼 회식 말고 진짜 맛집 다니고 싶어요.',          thrownMin:35},
+  {name:'유진',   age:28, matchGu:'서초구',   displayGu:'양재',   mood:'walk',    moodEmoji:'🚶', moodLabel:'산책',      emoji:'🌳', tags:['양재천','시민의숲','자전거'],     topStops:['산책','공원','자전거'],       bio:'양재천 산책 메이트 구해요.',                    thrownMin:14},
 
-  // 마포·홍대·연남 (20대 핫플)
-  {name:'민준',   age:29, matchGu:'마포구',   displayGu:'홍대',   mood:'happy',   moodEmoji:'🎉', moodLabel:'기쁨',      emoji:'🎸', tags:['인디공연','수제맥주','LP바'],     bio:'홍대 라이브 공연 보러 갈 분.',                  thrownMin:5},
-  {name:'하은',   age:27, matchGu:'마포구',   displayGu:'연남',   mood:'walk',    moodEmoji:'🚶', moodLabel:'산책',      emoji:'🌿', tags:['골목산책','반려견','북카페'],     bio:'연남 골목 걷는 거 좋아함. 강아지 친구 환영.',    thrownMin:11},
-  {name:'동현',   age:29, matchGu:'마포구',   displayGu:'망원',   mood:'cafe',    moodEmoji:'☕', moodLabel:'카페 호핑',  emoji:'🥐', tags:['로스터리','브런치','베이커리'],   bio:'망원 로스터리 + 브런치 카페 같이 가요.',          thrownMin:18},
-  {name:'세빈',   age:25, matchGu:'마포구',   displayGu:'합정',   mood:'happy',   moodEmoji:'🎉', moodLabel:'기쁨',      emoji:'🍹', tags:['칵테일바','루프탑','펍크롤'],     bio:'합정 핫플 펍크롤 같이 다닐 사람!',              thrownMin:42},
+  // 마포·홍대·연남
+  {name:'민준',   age:29, matchGu:'마포구',   displayGu:'홍대',   mood:'happy',   moodEmoji:'🎉', moodLabel:'기쁨',      emoji:'🎸', tags:['인디공연','수제맥주','LP바'],     topStops:['펍','공연','LP바'],           bio:'홍대 라이브 공연 보러 갈 분.',                  thrownMin:5},
+  {name:'하은',   age:27, matchGu:'마포구',   displayGu:'연남',   mood:'walk',    moodEmoji:'🚶', moodLabel:'산책',      emoji:'🌿', tags:['골목산책','반려견','북카페'],     topStops:['산책','북카페','한적한곳'],   bio:'연남 골목 걷는 거 좋아함. 강아지 친구 환영.',    thrownMin:11},
+  {name:'동현',   age:29, matchGu:'마포구',   displayGu:'망원',   mood:'cafe',    moodEmoji:'☕', moodLabel:'카페 호핑',  emoji:'🥐', tags:['로스터리','브런치','베이커리'],   topStops:['카페','베이커리','디저트'],   bio:'망원 로스터리 + 브런치 카페 같이 가요.',          thrownMin:18},
+  {name:'세빈',   age:25, matchGu:'마포구',   displayGu:'합정',   mood:'happy',   moodEmoji:'🎉', moodLabel:'기쁨',      emoji:'🍹', tags:['칵테일바','루프탑','펍크롤'],     topStops:['펍','칵테일바','루프탑'],     bio:'합정 핫플 펍크롤 같이 다닐 사람!',              thrownMin:42},
 
-  // 성동·뚝섬·성수 (요즘 가장 핫함)
-  {name:'태현',   age:31, matchGu:'성동구',   displayGu:'뚝섬',   mood:'active',  moodEmoji:'🏃', moodLabel:'활발형',    emoji:'🚴', tags:['한강러닝','자전거','클라이밍'],   bio:'한강 러닝 메이트 구해요! 페이스 6분.',            thrownMin:3},
-  {name:'소영',   age:26, matchGu:'성동구',   displayGu:'성수',   mood:'foodie',  moodEmoji:'🍽', moodLabel:'먹방',      emoji:'🍜', tags:['노포','국밥','시장투어'],         bio:'성수 노포 · 시장 음식 탐방 좋아함.',              thrownMin:9},
-  {name:'재희',   age:28, matchGu:'성동구',   displayGu:'성수',   mood:'cafe',    moodEmoji:'☕', moodLabel:'카페 호핑',  emoji:'🧁', tags:['디저트','베이커리','감성카페'],   bio:'성수 디저트 카페 투어 같이 가실 분?',            thrownMin:27},
+  // 성동·뚝섬·성수
+  {name:'태현',   age:31, matchGu:'성동구',   displayGu:'뚝섬',   mood:'active',  moodEmoji:'🏃', moodLabel:'활발형',    emoji:'🚴', tags:['한강러닝','자전거','클라이밍'],   topStops:['한강','자전거','러닝'],       bio:'한강 러닝 메이트 구해요! 페이스 6분.',            thrownMin:3},
+  {name:'소영',   age:26, matchGu:'성동구',   displayGu:'성수',   mood:'foodie',  moodEmoji:'🍽', moodLabel:'먹방',      emoji:'🍜', tags:['노포','국밥','시장투어'],         topStops:['노포','시장','맛집'],         bio:'성수 노포 · 시장 음식 탐방 좋아함.',              thrownMin:9},
+  {name:'재희',   age:28, matchGu:'성동구',   displayGu:'성수',   mood:'cafe',    moodEmoji:'☕', moodLabel:'카페 호핑',  emoji:'🧁', tags:['디저트','베이커리','감성카페'],   topStops:['카페','디저트','베이커리'],   bio:'성수 디저트 카페 투어 같이 가실 분?',            thrownMin:27},
 
-  // 종로·중구 (을지로·북촌)
-  {name:'유나',   age:25, matchGu:'중구',     displayGu:'을지로',  mood:'date',    moodEmoji:'💕', moodLabel:'로맨틱',    emoji:'🍷', tags:['힙지로','LP바','노포'],           bio:'을지로 노가리 + 숨은 LP바 좋아함.',              thrownMin:16},
-  {name:'준호',   age:28, matchGu:'종로구',   displayGu:'북촌',   mood:'culture', moodEmoji:'🎨', moodLabel:'문화 탐방',  emoji:'🖼', tags:['전시회','독립영화','한옥'],       bio:'주말마다 전시 가요. 갤러리 투어 같이!',          thrownMin:6},
-  {name:'재훈',   age:30, matchGu:'종로구',   displayGu:'서촌',   mood:'solo',    moodEmoji:'🍺', moodLabel:'혼밥·혼술',  emoji:'📖', tags:['혼술','독서','조용한곳'],         bio:'서촌 조용한 혼술 메이트?',                       thrownMin:31},
-  {name:'예진',   age:23, matchGu:'종로구',   displayGu:'대학로',  mood:'culture', moodEmoji:'🎨', moodLabel:'문화 탐방',  emoji:'🎭', tags:['연극','뮤지컬','북카페'],         bio:'대학로 소극장 자주 가요. 연극 후 토크해요.',      thrownMin:19},
+  // 종로·중구
+  {name:'유나',   age:25, matchGu:'중구',     displayGu:'을지로',  mood:'date',    moodEmoji:'💕', moodLabel:'로맨틱',    emoji:'🍷', tags:['힙지로','LP바','노포'],           topStops:['LP바','노포','와인바'],       bio:'을지로 노가리 + 숨은 LP바 좋아함.',              thrownMin:16},
+  {name:'준호',   age:28, matchGu:'종로구',   displayGu:'북촌',   mood:'culture', moodEmoji:'🎨', moodLabel:'문화 탐방',  emoji:'🖼', tags:['전시회','독립영화','한옥'],       topStops:['갤러리','한옥','독립서점'],   bio:'주말마다 전시 가요. 갤러리 투어 같이!',          thrownMin:6},
+  {name:'재훈',   age:30, matchGu:'종로구',   displayGu:'서촌',   mood:'solo',    moodEmoji:'🍺', moodLabel:'혼밥·혼술',  emoji:'📖', tags:['혼술','독서','조용한곳'],         topStops:['혼술','독립서점','한적한곳'], bio:'서촌 조용한 혼술 메이트?',                       thrownMin:31},
+  {name:'예진',   age:23, matchGu:'종로구',   displayGu:'대학로',  mood:'culture', moodEmoji:'🎨', moodLabel:'문화 탐방',  emoji:'🎭', tags:['연극','뮤지컬','북카페'],         topStops:['공연','갤러리','북카페'],     bio:'대학로 소극장 자주 가요. 연극 후 토크해요.',      thrownMin:19},
 
   // 용산·이태원
-  {name:'서연',   age:24, matchGu:'용산구',   displayGu:'이태원',  mood:'foodie',  moodEmoji:'🍽', moodLabel:'탐식',      emoji:'🍣', tags:['세계요리','와인','브런치'],       bio:'이태원·한남 맛집 탐방러.',                       thrownMin:12},
-  {name:'주원',   age:29, matchGu:'용산구',   displayGu:'한남',   mood:'date',    moodEmoji:'💕', moodLabel:'로맨틱',    emoji:'🥂', tags:['뷰맛집','와인','한남'],           bio:'한남 뷰 좋은 카페·다이닝 알아요.',                thrownMin:24},
+  {name:'서연',   age:24, matchGu:'용산구',   displayGu:'이태원',  mood:'foodie',  moodEmoji:'🍽', moodLabel:'탐식',      emoji:'🍣', tags:['세계요리','와인','브런치'],       topStops:['맛집','와인바','베이커리'],   bio:'이태원·한남 맛집 탐방러.',                       thrownMin:12},
+  {name:'주원',   age:29, matchGu:'용산구',   displayGu:'한남',   mood:'date',    moodEmoji:'💕', moodLabel:'로맨틱',    emoji:'🥂', tags:['뷰맛집','와인','한남'],           topStops:['루프탑','와인바','뷰맛집'],   bio:'한남 뷰 좋은 카페·다이닝 알아요.',                thrownMin:24},
 
-  // 광진·송파·강동
-  {name:'시현',   age:26, matchGu:'송파구',   displayGu:'잠실',   mood:'active',  moodEmoji:'🏃', moodLabel:'활발형',    emoji:'🏊', tags:['한강','수영','자전거'],           bio:'잠실 한강 자전거 같이 탈 사람!',                 thrownMin:7},
-  {name:'다은',   age:27, matchGu:'광진구',   displayGu:'성수·건대', mood:'happy',moodEmoji:'🎉', moodLabel:'기쁨',      emoji:'🍻', tags:['건대맛집','펍','노포'],           bio:'건대 노포 펍크롤 같이!',                         thrownMin:38},
+  // 광진·송파
+  {name:'시현',   age:26, matchGu:'송파구',   displayGu:'잠실',   mood:'active',  moodEmoji:'🏃', moodLabel:'활발형',    emoji:'🏊', tags:['한강','수영','자전거'],           topStops:['한강','자전거','공원'],       bio:'잠실 한강 자전거 같이 탈 사람!',                 thrownMin:7},
+  {name:'다은',   age:27, matchGu:'광진구',   displayGu:'성수·건대', mood:'happy',moodEmoji:'🎉', moodLabel:'기쁨',      emoji:'🍻', tags:['건대맛집','펍','노포'],           topStops:['펍','노포','맛집'],           bio:'건대 노포 펍크롤 같이!',                         thrownMin:38},
 
-  // 영등포·관악 (다양성)
-  {name:'준영',   age:30, matchGu:'영등포구', displayGu:'여의도',  mood:'walk',    moodEmoji:'🚶', moodLabel:'산책',      emoji:'🌸', tags:['여의도공원','한강','벚꽃'],       bio:'여의도 산책 + 공원 피크닉.',                     thrownMin:15},
-  {name:'아람',   age:25, matchGu:'관악구',   displayGu:'서울대입구', mood:'broke',moodEmoji:'💸', moodLabel:'거지모드',   emoji:'🍙', tags:['가성비','분식','시장'],           bio:'샤로수길 가성비 맛집 좋아함.',                   thrownMin:21},
+  // 영등포·관악
+  {name:'준영',   age:30, matchGu:'영등포구', displayGu:'여의도',  mood:'walk',    moodEmoji:'🚶', moodLabel:'산책',      emoji:'🌸', tags:['여의도공원','한강','벚꽃'],       topStops:['공원','한강','산책'],         bio:'여의도 산책 + 공원 피크닉.',                     thrownMin:15},
+  {name:'아람',   age:25, matchGu:'관악구',   displayGu:'서울대입구', mood:'broke',moodEmoji:'💸', moodLabel:'거지모드',   emoji:'🍙', tags:['가성비','분식','시장'],           topStops:['시장','맛집','공원'],         bio:'샤로수길 가성비 맛집 좋아함.',                   thrownMin:21},
 
-  // 노원·은평 (외곽)
-  {name:'민채',   age:24, matchGu:'은평구',   displayGu:'은평',   mood:'walk',    moodEmoji:'🚶', moodLabel:'산책',      emoji:'🍂', tags:['북한산','산책','한적한곳'],       bio:'북한산 둘레길 같이 걸을 분.',                    thrownMin:44},
+  // 외곽
+  {name:'민채',   age:24, matchGu:'은평구',   displayGu:'은평',   mood:'walk',    moodEmoji:'🚶', moodLabel:'산책',      emoji:'🍂', tags:['북한산','산책','한적한곳'],       topStops:['산책','한적한곳','공원'],     bio:'북한산 둘레길 같이 걸을 분.',                    thrownMin:44},
 
-  // 서대문·강서 (균형)
-  {name:'태원',   age:31, matchGu:'서대문구', displayGu:'신촌',   mood:'normal',  moodEmoji:'😐', moodLabel:'평범',      emoji:'🍱', tags:['일상','맛집','카페'],             bio:'신촌 적당히 둘러볼 사람.',                       thrownMin:33},
-  {name:'서후',   age:28, matchGu:'중구',     displayGu:'명동',   mood:'foodie',  moodEmoji:'🍽', moodLabel:'탐식',      emoji:'🥟', tags:['중식','만두','노포'],             bio:'명동·을지로 중식 노포 좋아함.',                  thrownMin:10},
+  // 서대문·중구
+  {name:'태원',   age:31, matchGu:'서대문구', displayGu:'신촌',   mood:'normal',  moodEmoji:'😐', moodLabel:'평범',      emoji:'🍱', tags:['일상','맛집','카페'],             topStops:['맛집','카페','산책'],         bio:'신촌 적당히 둘러볼 사람.',                       thrownMin:33},
+  {name:'서후',   age:28, matchGu:'중구',     displayGu:'명동',   mood:'foodie',  moodEmoji:'🍽', moodLabel:'탐식',      emoji:'🥟', tags:['중식','만두','노포'],             topStops:['노포','맛집','시장'],         bio:'명동·을지로 중식 노포 좋아함.',                  thrownMin:10},
 
-  // 강북·도봉 (외곽 보완)
-  {name:'채린',   age:26, matchGu:'성북구',   displayGu:'성신여대', mood:'cafe',   moodEmoji:'☕', moodLabel:'카페 호핑',  emoji:'🍰', tags:['디저트카페','베이커리','감성'],   bio:'성북동 한적한 카페 좋아함.',                     thrownMin:29},
+  // 성북
+  {name:'채린',   age:26, matchGu:'성북구',   displayGu:'성신여대', mood:'cafe',   moodEmoji:'☕', moodLabel:'카페 호핑',  emoji:'🍰', tags:['디저트카페','베이커리','감성'],   topStops:['카페','디저트','베이커리'],   bio:'성북동 한적한 카페 좋아함.',                     thrownMin:29},
 ];
 
-let matchState = {
-  matched: lsGet('sdt_matches', []),
-  filter: 'all', // 'all' | 'gu' | 'mood'
+/* 사용자의 기분 → 가고 싶은 stop 카테고리 매핑 (코스 겹침 판단용) */
+const MOOD_STOPS = {
+  cafe:    ['카페','베이커리','디저트'],
+  foodie:  ['맛집','노포','시장'],
+  active:  ['한강','자전거','러닝'],
+  walk:    ['산책','공원','한적한곳'],
+  culture: ['갤러리','한옥','공연'],
+  date:    ['루프탑','와인바','뷰맛집'],
+  solo:    ['혼술','독립서점','한적한곳'],
+  happy:   ['펍','칵테일바','공연'],
+  sad:     ['북카페','독립서점','한적한곳'],
+  broke:   ['시장','공원','맛집'],
+  normal:  ['맛집','카페','산책'],
+  angry:   ['펍','한강','공원'],
 };
+function getUserCourse(){
+  const moodId = selectedMood?.id;
+  return {
+    gu: hitDist?.n || null,
+    mood: moodId || null,
+    moodLabel: selectedMood?.label || null,
+    moodEmoji: selectedMood?.emoji || null,
+    topStops: (moodId && MOOD_STOPS[moodId]) || ['맛집','카페'],
+  };
+}
+
+let matchState = {
+  tab: 'rooms', // 'rooms' | 'lobby'
+};
+let _matchedProfile = null;
 
 function openMatch(){
   document.getElementById('homeScreen').classList.add('out');
   document.getElementById('matchScreen').classList.remove('out');
   pushScreen('matchScreen');
-  renderMatchFilters();
-  renderMatchFeed();
+  switchMatchTab('rooms');
 }
 
 function closeMatch(){
@@ -3639,105 +4253,141 @@ function closeMatch(){
   pushScreen('homeScreen');
 }
 
-function renderMatchFilters(){
-  const myGu = hitDist?.n;
-  const myMood = selectedMood?.label;
-  const filters = [
-    {id:'all', label:`전체 ${MATCH_PROFILES.length}명`},
-  ];
-  if(myGu) filters.push({id:'gu', label:`📍 ${myGu}`});
-  if(myMood) filters.push({id:'mood', label:`${selectedMood.emoji} ${myMood}`});
-  document.getElementById('matchFilters').innerHTML = filters.map(f => `
-    <button class="match-filter-chip${matchState.filter===f.id?' active':''}" onclick="setMatchFilter('${f.id}')">${escHtml(f.label)}</button>
-  `).join('');
+function switchMatchTab(tab){
+  matchState.tab = tab;
+  document.querySelectorAll('.match-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  document.getElementById('matchTabRooms').style.display = tab === 'rooms' ? 'block' : 'none';
+  document.getElementById('matchTabLobby').style.display = tab === 'lobby' ? 'block' : 'none';
+  if(tab === 'rooms') renderRoomsTab();
+  else renderLobbyTab();
 }
 
-function setMatchFilter(id){
-  matchState.filter = id;
-  renderMatchFilters();
-  renderMatchFeed();
-}
+/* ── 탭 1: 내 톡방 ── */
+function renderRoomsTab(){
+  const pane = document.getElementById('matchTabRooms');
+  const rooms = loadRooms();
+  document.getElementById('tabRoomsCount').textContent = rooms.length;
+  document.getElementById('matchFootCount').textContent =
+    rooms.length ? `${rooms.length}개 활성 톡방` : '활성 톡방 없음';
 
-function renderMatchFeed(){
-  const feed = document.getElementById('matchFeed');
-  let pool = MATCH_PROFILES.slice();
-  if(matchState.filter === 'gu' && hitDist){
-    pool = pool.filter(p => p.matchGu === hitDist.n);
-  } else if(matchState.filter === 'mood' && selectedMood){
-    pool = pool.filter(p => p.mood === selectedMood.id);
-  }
-  // 최근 던진 순서로 정렬
-  pool.sort((a,b) => a.thrownMin - b.thrownMin);
-
-  document.getElementById('matchFootCount').textContent = `${pool.length}명 활동 중`;
-
-  if(pool.length === 0){
-    feed.innerHTML = `
+  if(rooms.length === 0){
+    pane.innerHTML = `
       <div class="match-feed-empty">
-        <div class="match-empty-icon">🎯</div>
-        <div class="match-empty-title">이 조건으로 던진 사람이 없어요</div>
-        <div class="match-empty-desc">필터를 바꾸거나 다트를 먼저 던져 보세요.<br>같은 코스가 나오면 자동으로 여기 표시됩니다.</div>
+        <div class="match-empty-icon">💬</div>
+        <div class="match-empty-title">아직 톡방이 없어요</div>
+        <div class="match-empty-desc">다트를 먼저 던져 보세요.<br>코스가 겹치는 사람과 자동으로 톡방이 생성됩니다.</div>
+        <button class="match-empty-btn" onclick="closeMatch();document.getElementById('moodScreen').classList.remove('out');pushScreen('moodScreen')">다트 던지러 가기 🎯</button>
       </div>`;
     return;
   }
 
-  feed.innerHTML = pool.map((p, i) => {
-    const applied = matchState.matched.find(m => m.name === p.name);
+  // 최신 톡방 먼저
+  rooms.sort((a,b) => b.createdAt - a.createdAt);
+  pane.innerHTML = rooms.map(r => {
+    const left = (r.createdAt + ROOM_TTL_MS) - Date.now();
+    const h = Math.floor(left / 3600000);
+    const m = Math.floor((left % 3600000) / 60000);
+    const timeLeft = left > 0 ? `${h}시간 ${m}분 남음` : '만료됨';
+    const memberCount = r.members.length + 1;
     return `
-      <div class="match-feed-card">
-        <div class="match-feed-avatar">${p.emoji}</div>
-        <div class="match-feed-info">
-          <div class="match-feed-name-row">
-            <span class="match-feed-name">${escHtml(p.name)}</span>
-            <span class="match-feed-age">${p.age}</span>
-            <span class="match-feed-time">${p.thrownMin}분 전</span>
-          </div>
-          <div class="match-feed-course">
-            <span class="match-feed-chip">${p.moodEmoji} ${escHtml(p.moodLabel)}</span>
-            <span class="match-feed-chip gu">📍 ${escHtml(p.displayGu)}</span>
-          </div>
-          <div class="match-feed-bio">${escHtml(p.bio)}</div>
-          <div class="match-feed-tags">
-            ${p.tags.map(t => `<span class="match-feed-tag">#${escHtml(t)}</span>`).join('')}
-          </div>
+      <div class="room-card${r.joined ? ' joined' : ''}" onclick="${r.joined ? `openChat('${r.id}')` : `enterRoom('${r.id}')`}">
+        <div class="room-card-top">
+          <div class="room-card-title">${escHtml(r.courseGu)} · ${r.courseMoodEmoji||'🎯'} ${escHtml(r.courseMoodLabel||'')}</div>
+          <span class="room-card-status">${r.joined ? '✓ 입장함' : '미입장'}</span>
         </div>
-        <button class="mate-apply-btn${applied?' applied':''}" ${applied?'disabled':''} onclick="applyFromFeed(${i})">
-          ${applied ? '신청 완료 ✓' : '동행 신청'}
-        </button>
+        <div class="room-card-stops">겹친 코스: ${(r.sharedStops||[]).slice(0,3).join(' · ')||'-'}</div>
+        <div class="room-card-bottom">
+          <div class="room-card-avatars">${renderMemberAvatars(r)}</div>
+          <div class="room-card-meta">${memberCount}명 · ${timeLeft}</div>
+        </div>
       </div>`;
   }).join('');
-  _feedPool = pool;
 }
 
-let _feedPool = [];
-function applyFromFeed(idx){
-  const profile = _feedPool[idx];
-  if(!profile) return;
-  // 저장
-  if(!matchState.matched.find(m => m.name === profile.name)){
-    matchState.matched.push({name: profile.name, gu: profile.matchGu, ts: Date.now()});
-    localStorage.setItem('sdt_matches', JSON.stringify(matchState.matched));
+/* ── 탭 2: 같이 던질 사람 (Option A) ── */
+function renderLobbyTab(){
+  const pane = document.getElementById('matchTabLobby');
+  // 같은 기분 사람만 (선택된 기분이 있으면), 없으면 전체
+  const myMood = selectedMood?.id;
+  let pool = MATCH_PROFILES.slice();
+  if(myMood) pool = pool.filter(p => p.mood === myMood);
+  pool.sort((a,b) => a.thrownMin - b.thrownMin);
+
+  document.getElementById('matchFootCount').textContent =
+    `${pool.length}명 활동 중${myMood ? ` (${selectedMood.label})` : ''}`;
+
+  const moodNote = myMood
+    ? `<div class="lobby-note">기분 <strong>${selectedMood.emoji} ${escHtml(selectedMood.label)}</strong> 사람만 표시 중</div>`
+    : `<div class="lobby-note">기분을 먼저 고르면 같은 기분 사람만 보여드려요</div>`;
+
+  if(pool.length === 0){
+    pane.innerHTML = `
+      ${moodNote}
+      <div class="match-feed-empty">
+        <div class="match-empty-icon">🎯</div>
+        <div class="match-empty-title">같은 기분 사람이 없어요</div>
+        <div class="match-empty-desc">잠시 후 다시 확인해 주세요.</div>
+      </div>`;
+    return;
   }
-  renderMatchFeed();
-  // 60% 확률로 매칭 성공
-  setTimeout(() => {
-    if(Math.random() < 0.6) showFeedMatchSuccess(profile);
-  }, 600);
+
+  pane.innerHTML = moodNote + pool.map((p, i) => `
+    <div class="lobby-card">
+      <div class="lobby-avatar">${p.emoji}</div>
+      <div class="lobby-info">
+        <div class="lobby-name-row">
+          <span class="lobby-name">${escHtml(p.name)}</span>
+          <span class="lobby-age">${p.age}</span>
+          <span class="lobby-time">${p.thrownMin}분 전 활동</span>
+        </div>
+        <div class="lobby-chips">
+          <span class="match-feed-chip">${p.moodEmoji} ${escHtml(p.moodLabel)}</span>
+          <span class="match-feed-chip gu">📍 ${escHtml(p.displayGu)}</span>
+        </div>
+        <div class="lobby-bio">${escHtml(p.bio)}</div>
+      </div>
+      <button class="lobby-btn" onclick="requestCoThrow(${i})">같이<br>던지기</button>
+    </div>
+  `).join('');
+  _lobbyPool = pool;
 }
 
-let _matchedProfile = null;
-function showFeedMatchSuccess(profile){
-  _matchedProfile = profile;
-  document.getElementById('matchModalName').textContent = `${profile.name} (${profile.age}) · ${profile.displayGu}`;
-  document.getElementById('matchModalDesc').textContent =
-    `${profile.name}님도 같은 코스를 뽑았어요! 같이 다녀보시겠어요?`;
-  document.getElementById('matchModalSuggest').innerHTML = `
-    <div class="match-modal-suggest-hd">상대방이 뽑은 코스</div>
-    <strong style="color:var(--pink-deep)">${escHtml(profile.displayGu)}</strong>에서 <strong style="color:var(--coral)">${profile.moodEmoji} ${escHtml(profile.moodLabel)}</strong> 모드 — 같이 다트를 던져 합쳐보세요`;
-  const btns = document.querySelectorAll('#matchSuccessModal .match-modal-btn');
-  if(btns[0]) btns[0].textContent = '계속 둘러보기';
-  if(btns[1]) btns[1].textContent = '같이 다트 던지기 🎯';
-  document.getElementById('matchSuccessModal').classList.add('show');
+let _lobbyPool = [];
+function requestCoThrow(idx){
+  const profile = _lobbyPool[idx];
+  if(!profile) return;
+  // 데모: 요청 → 2초 후 수락 알림 → 다트 화면으로
+  const ok = confirm(`${profile.name}(${profile.age})님께 "같이 던지기" 요청을 보내시겠어요?\n\n수락하면 함께 다트를 던지고 같은 코스로 출발합니다.`);
+  if(!ok) return;
+  showLobbyToast(`📨 ${profile.name}님께 요청을 보냈어요...`);
+  setTimeout(() => {
+    showLobbyToast(`✓ ${profile.name}님이 수락했어요! 다트 화면으로 이동합니다`);
+    setTimeout(() => {
+      // 동행 정보 저장 → 다트 화면에서 표시
+      window._coThrowPartner = {name:profile.name, emoji:profile.emoji, age:profile.age, displayGu:profile.displayGu, moodLabel:profile.moodLabel};
+      closeMatch();
+      // 기분이 없으면 상대 기분으로 자동 설정
+      if(!selectedMood){
+        const m = MOODS.find(x => x.id === profile.mood);
+        if(m) selectedMood = m;
+      }
+      startGame('dart');
+    }, 1200);
+  }, 1500);
+}
+
+function showLobbyToast(msg){
+  let t = document.getElementById('lobbyToast');
+  if(!t){
+    t = document.createElement('div');
+    t.id = 'lobbyToast';
+    t.className = 'lobby-toast';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._hideHandle);
+  t._hideHandle = setTimeout(() => t.classList.remove('show'), 2200);
 }
 
 function closeMatchSuccess(goToGame){
