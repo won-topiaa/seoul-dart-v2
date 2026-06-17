@@ -552,6 +552,10 @@ body.chat-open .hdr{ display:none; }
   background:linear-gradient(150deg,var(--pink-soft) 0%,var(--bg2) 50%);
   border-color:#FFD0DC;
 }
+.mode-card.card-board{
+  background:linear-gradient(150deg,var(--point-s,#E8EEF5) 0%,var(--bg2) 50%);
+  border-color:#CFE0EE;
+}
 .mode-card-top{
   display:flex;align-items:center;justify-content:space-between;
 }
@@ -580,6 +584,10 @@ body.chat-open .hdr{ display:none; }
   background:#FFFFFF;color:var(--pink-deep);
   border:1px solid #FFD0DC;
 }
+.badge-board{
+  background:#FFFFFF;color:#1E3A5F;
+  border:1px solid #CFE0EE;
+}
 .mode-card-title{
   font-size:21px;font-weight:800;letter-spacing:-.6px;
   color:var(--txt);margin-bottom:6px;
@@ -603,6 +611,7 @@ body.chat-open .hdr{ display:none; }
 .card-dart  .mode-card-features li::before{ background:var(--coral); }
 .card-local .mode-card-features li::before{ background:var(--wood); }
 .card-match .mode-card-features li::before{ background:var(--pink-deep); }
+.card-board .mode-card-features li::before{ background:var(--point,#1E3A5F); }
 .btn-mode{
   padding:15px 18px;
   border:none;border-radius:14px;
@@ -625,6 +634,10 @@ body.chat-open .hdr{ display:none; }
 .btn-match{
   background:linear-gradient(135deg,var(--pink) 0%,var(--pink-deep) 100%);
   box-shadow:0 8px 24px rgba(232,117,147,.28);
+}
+.btn-board{
+  background:linear-gradient(135deg,#3A6EA5 0%,#1E3A5F 100%);
+  box-shadow:0 8px 24px rgba(30,58,95,.26);
 }
 .btn-mode .arr{ font-size:18px;font-weight:400;opacity:.92; }
 .home-foot{
@@ -935,6 +948,59 @@ body.chat-open .hdr{ display:none; }
   text-align:center;
 }
 .chat-leave-btn:hover{ color:var(--red); }
+
+/* ── BOARD SCREEN (오픈소스 코스 게시판) ── */
+#boardScreen{
+  justify-content:flex-start;align-items:center;
+  padding:62px 16px max(48px,calc(env(safe-area-inset-bottom) + 16px));
+  overflow-y:auto;
+}
+.board-inner{ width:100%;max-width:480px;display:flex;flex-direction:column;gap:16px;position:relative;z-index:2; }
+.board-hd{ text-align:center;padding:8px 4px 0; }
+.board-kicker{
+  font-size:11px;font-weight:600;letter-spacing:1.2px;
+  color:#1E3A5F;text-transform:uppercase;margin-bottom:8px;
+  font-family:var(--font-num);display:inline-block;
+}
+.board-title{ font-size:30px;font-weight:800;letter-spacing:-1.2px;color:var(--txt);margin-bottom:8px;line-height:1.1; }
+.board-sub{ font-size:13px;color:var(--txt2);line-height:1.6;font-weight:500; }
+.board-random-btn{
+  width:100%;padding:15px;
+  background:linear-gradient(135deg,#3A6EA5 0%,#1E3A5F 100%);
+  color:#fff;border:none;border-radius:14px;
+  font-size:15px;font-weight:700;letter-spacing:-.2px;cursor:pointer;font-family:inherit;
+  box-shadow:0 6px 18px rgba(30,58,95,.25);transition:transform .15s;
+}
+.board-random-btn:hover{ transform:translateY(-1px); }
+.board-random-btn:active{ transform:translateY(0) scale(.98); }
+.board-list{ display:flex;flex-direction:column;gap:10px; }
+.board-card{
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--r16);
+  padding:15px 16px;box-shadow:var(--shadow-sm);transition:all .15s ease;cursor:pointer;
+}
+.board-card:hover{ transform:translateY(-1px);box-shadow:var(--shadow-md);border-color:#3A6EA5; }
+.board-card:active{ transform:translateY(0) scale(.99); }
+.board-card-top{ display:flex;align-items:center;gap:8px;margin-bottom:8px; }
+.board-card-gu{
+  font-size:11px;font-weight:700;color:#1E3A5F;
+  background:#E8EEF5;border:1px solid #CFE0EE;border-radius:6px;padding:2px 8px;
+}
+.board-card-mood{ font-size:11px;color:var(--txt2);font-weight:600; }
+.board-card-like{ margin-left:auto;font-size:12px;font-weight:700;color:var(--coral);font-family:var(--font-num); }
+.board-card-title{ font-size:15px;font-weight:800;color:var(--txt);letter-spacing:-.3px;margin-bottom:6px; }
+.board-card-stops{ display:flex;flex-wrap:wrap;align-items:center;gap:5px;margin-bottom:8px; }
+.board-stop{ font-size:11.5px;font-weight:600;color:var(--txt);background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:3px 9px; }
+.board-stop-arrow{ font-size:11px;color:var(--txt3); }
+.board-card-by{ font-size:11px;color:var(--txt3);font-weight:500; }
+.board-foot{ display:flex;justify-content:space-between;align-items:center;padding:4px 4px 0; }
+.board-back-btn{ background:none;border:none;color:var(--txt2);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;padding:6px 10px;letter-spacing:-.2px; }
+.board-back-btn:hover{ color:#1E3A5F; }
+.board-add-btn{
+  background:var(--bg2);border:1px solid var(--border);color:#1E3A5F;
+  font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;
+  padding:8px 14px;border-radius:20px;box-shadow:var(--shadow-sm);transition:all .15s;letter-spacing:-.2px;
+}
+.board-add-btn:hover{ border-color:#3A6EA5;transform:translateY(-1px); }
 
 /* ── MATCH SCREEN ── */
 #matchScreen{
@@ -1934,6 +2000,26 @@ body.chat-open .hdr{ display:none; }
         </button>
       </div>
 
+      <!-- 카드 4 : 오픈소스 코스 게시판 -->
+      <div class="mode-card card-board">
+        <div class="mode-card-top">
+          <span class="mode-card-icon">🗺</span>
+          <span class="mode-badge badge-board">오픈소스 · 베타</span>
+        </div>
+        <div>
+          <div class="mode-card-title">코스 게시판</div>
+          <div class="mode-card-desc">사람들이 직접 만든 서울 코스를 공유<br>그 코스로 떠나거나, 랜덤으로 골라요</div>
+        </div>
+        <ul class="mode-card-features">
+          <li>유저가 만든 코스를 공유 · 좋아요</li>
+          <li>공유 코스 중 랜덤으로 떠나기</li>
+          <li>사람들이 함께 채워가는 서울 지도</li>
+        </ul>
+        <button class="btn-mode btn-board" onclick="openBoard()">
+          코스 게시판 열기 <span class="arr">→</span>
+        </button>
+      </div>
+
     </div>
   </div>
 </div>
@@ -2071,6 +2157,23 @@ body.chat-open .hdr{ display:none; }
     <div class="match-foot">
       <button class="match-back-btn" onclick="closeMatch()">← 홈으로</button>
       <div class="match-foot-count" id="matchFootCount"></div>
+    </div>
+  </div>
+</div>
+
+<!-- BOARD SCREEN — 오픈소스 코스 게시판 -->
+<div class="screen out" id="boardScreen">
+  <div class="board-inner">
+    <div class="board-hd">
+      <p class="board-kicker">✦ 오픈소스 코스 게시판</p>
+      <h2 class="board-title">사람들이 만든 서울 코스</h2>
+      <p class="board-sub">유저가 직접 공유한 코스를 골라서 떠나거나, 랜덤으로 운에 맡겨보세요.<br><span style="color:var(--txt3);font-size:11.5px">※ 데모 — 표시되는 코스는 예시입니다</span></p>
+    </div>
+    <button class="board-random-btn" onclick="boardRandom()">🎲 공유 코스 중 랜덤으로 떠나기</button>
+    <div id="boardList" class="board-list"></div>
+    <div class="board-foot">
+      <button class="board-back-btn" onclick="closeBoard()">← 홈으로</button>
+      <button class="board-add-btn" onclick="boardAddDemo()">+ 내 코스 공유하기</button>
     </div>
   </div>
 </div>
@@ -2810,7 +2913,7 @@ function goBackTo(target){
   // 3) target이 stampScreen이면 스탬프만 닫고 메인 화면은 그대로
   if(target === 'stampScreen') return;
 
-  const screens = ['moodScreen','homeScreen','gameScreen','resultScreen','matchScreen','chatScreen'];
+  const screens = ['moodScreen','homeScreen','gameScreen','resultScreen','matchScreen','chatScreen','boardScreen'];
   if(!screens.includes(target)) target = 'moodScreen'; // 알 수 없는 target → 시작 화면
   // 톡방 헤더 가림 토글 — 브라우저 뒤로가기 등 모든 화면 전환에서 동기화
   document.body.classList.toggle('chat-open', target === 'chatScreen');
@@ -4247,6 +4350,59 @@ let matchState = {
   tab: 'rooms', // 'rooms' | 'lobby'
 };
 let _matchedProfile = null;
+
+/* ══════════════════════════════════════════
+   오픈소스 코스 게시판 — 데모
+   사용자가 공유한 서울 코스를 보여주고, 랜덤/선택해 떠나기
+══════════════════════════════════════════ */
+const BOARD_COURSES = [
+  {gu:'성수', mood:'☕ 카페 호핑', title:'성수 감성 카페 풀코스', stops:['대림창고','어니언','블루보틀'], by:'지우', likes:312},
+  {gu:'을지로', mood:'🍺 혼술', title:'힙지로 노포 + LP바 야행', stops:['을지로노가리','십원집','LP바'], by:'유나', likes:287},
+  {gu:'연남', mood:'🚶 산책', title:'연트럴파크 골목 산책', stops:['연트럴파크','골목책방','로스터리'], by:'하은', likes:241},
+  {gu:'북촌', mood:'🎨 문화 탐방', title:'한옥 사이 갤러리 투어', stops:['북촌한옥','국립현대','삼청동길'], by:'준호', likes:198},
+  {gu:'망원', mood:'🍽 먹방', title:'망원시장 길거리 먹방', stops:['망원시장','고로케','수제버거'], by:'소영', likes:176},
+  {gu:'한강', mood:'🏃 활발형', title:'뚝섬 자전거 + 치맥', stops:['뚝섬역','자전거대여','한강치맥'], by:'태현', likes:154},
+];
+
+function openBoard(){
+  document.getElementById('homeScreen').classList.add('out');
+  document.getElementById('boardScreen').classList.remove('out');
+  pushScreen('boardScreen');
+  renderBoard();
+}
+function closeBoard(){
+  document.getElementById('boardScreen').classList.add('out');
+  document.getElementById('homeScreen').classList.remove('out');
+  pushScreen('homeScreen');
+}
+function renderBoard(){
+  const el = document.getElementById('boardList');
+  el.innerHTML = BOARD_COURSES.map((c,i)=>`
+    <div class="board-card" onclick="boardPick(${i})">
+      <div class="board-card-top">
+        <span class="board-card-gu">📍 ${escHtml(c.gu)}</span>
+        <span class="board-card-mood">${escHtml(c.mood)}</span>
+        <span class="board-card-like">♥ ${c.likes}</span>
+      </div>
+      <div class="board-card-title">${escHtml(c.title)}</div>
+      <div class="board-card-stops">
+        ${c.stops.map((s,j)=>`${j>0?'<span class="board-stop-arrow">→</span>':''}<span class="board-stop">${escHtml(s)}</span>`).join('')}
+      </div>
+      <div class="board-card-by">by ${escHtml(c.by)} · 공유 코스</div>
+    </div>`).join('');
+}
+function boardPick(i){
+  const c = BOARD_COURSES[i];
+  if(!c) return;
+  alert(`🗺 "${c.title}" 코스로 떠납니다!\n\n${c.gu} · ${c.mood}\n${c.stops.join(' → ')}\n\n(데모) 실제 서비스에서는 이 코스로 바로 길안내가 시작됩니다.`);
+}
+function boardRandom(){
+  const c = BOARD_COURSES[Math.floor(Math.random()*BOARD_COURSES.length)];
+  alert(`🎲 랜덤 당첨!\n\n"${c.title}"\n${c.gu} · ${c.mood}\n${c.stops.join(' → ')}\n\n공유 코스 중 하나가 오늘의 코스로 정해졌어요.`);
+}
+function boardAddDemo(){
+  alert('✏️ 내 코스 공유하기\n\n(데모) 다트로 다녀온 코스를 게시판에 공유하면, 다른 사람들이 그 코스로 떠나거나 랜덤 풀에 추가됩니다.\n\n좋아요가 일정 수를 넘으면 "추천 코스"로 승격돼요.');
+}
 
 function openMatch(){
   document.getElementById('homeScreen').classList.add('out');
